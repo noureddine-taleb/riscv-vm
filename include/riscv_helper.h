@@ -18,9 +18,9 @@
  */
 #define SIGNEX(v, sb) ((v) | (((v) & (1LL << (sb))) ? ~((1LL << (sb)) - 1LL) : 0))
 
-#define UMUL umul64wide
-#define MUL mul64wide
-#define MULHSU mulhsu64wide
+#define __UMUL umul64wide
+#define __MUL mul64wide
+#define __MULHSU mulhsu64wide
 
 #define GEN_SIGNEX_FUNC(_bit)                          \
 	static inline ixlen SIGNEX_BIT_##_bit(ixlen input) \

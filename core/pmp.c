@@ -6,7 +6,6 @@
 #include <types.h>
 #include <hart.h>
 
-// #define PMP_DEBUG_ENABLE
 #ifdef PMP_DEBUG_ENABLE
 #define PMP_DEBUG(...)       \
 	do                       \
@@ -42,9 +41,6 @@ int pmp_write_csr_addr(u16 address, struct csr_mapping *map, uxlen val)
 {
 	u8 *cfg_ptr = (u8 *)map->cookie;
 	int pmpaddr_i = address - CSR_PMPADDR0;
-	// struct hart *hart = container_of(map, struct hart, csr_regs[address]);
-	// int pmpcfg_i = pmpaddr_i / sizeof(uxlen);
-	// pmpcfg_i += pmpaddr_i % sizeof(uxlen);
 
 	/*
 	 * check if the next index is locked and set to tor

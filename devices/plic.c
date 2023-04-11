@@ -5,7 +5,6 @@
 #include <riscv_helper.h>
 #include <plic.h>
 
-// #define PLIC_DEBUG
 #ifdef PLIC_DEBUG
 #define PLIC_DBG(...)        \
 	do                       \
@@ -181,9 +180,7 @@ int plic_bus_access(struct plic *plic, privilege_level priv_level,
 		if (access_type == bus_write_access)
 		{
 			memcpy(u8_ptr, value, len);
-			tmp_val = *(u32 *)value;
-			// printf("plic write access! "PRINTF_FMT" %x\n",
-			// address, tmp_val);
+			tmp_val = *(u32 *) value;
 			/*
 			 * check if it is the claim complete reg
 			 */

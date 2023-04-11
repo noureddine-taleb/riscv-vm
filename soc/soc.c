@@ -52,7 +52,7 @@ static void soc_init_mappings(struct soc *soc)
 						   PLIC_BASE_ADDR, PLIC_SIZE_BYTES);
 	INIT_MEM_ACCESS_STRUCT(soc, count++, uart_bus_access, &soc->ns16550,
 						   UARTNS16550_TX_REG_ADDR, UART_NS16550_NR_REGS);
-	INIT_MEM_ACCESS_STRUCT(soc, count++, memory_bus_access, soc->mrom,
+	INIT_MEM_ACCESS_STRUCT(soc, count++, memory_bus_access, soc->rom,
 						   MROM_BASE_ADDR, MROM_SIZE_BYTES);
 }
 
@@ -87,12 +87,6 @@ void soc_init(struct soc *soc, char *fdt, char *kernel)
 {
 	memset(soc, 0, sizeof(struct soc));
 
-	static u8 __attribute__((aligned(4))) soc_mrom[MROM_SIZE_BYTES];
-	static u8 __attribute__((aligned(4))) soc_ram[RAM_SIZE_BYTES];
-
-	soc->mrom = soc_mrom;
-	soc->ram = soc_ram;
-
 	/*
 	 * Copy dtb and firmware
 	 */
@@ -112,8 +106,8 @@ void soc_init(struct soc *soc, char *fdt, char *kernel)
 		ADDR_ALIGN_DOWN(RAM_BASE_ADDR + RAM_SIZE_BYTES - fdt_size,
 						FDT_ALIGN);
 	u64 fdt_off = fdt_addr - RAM_BASE_ADDR;
-	load_file(kernel, &soc_ram[0]);
-	load_file(fdt, &soc_ram[fdt_off]);
+	load_file(kernel, &soc->ram[0]);
+	load_file(fdt, &soc->ram[fdt_off]);
 
 	/*
 	 * this is the reset vector, taken from qemu v5.2
@@ -139,7 +133,7 @@ void soc_init(struct soc *soc, char *fdt, char *kernel)
 
 	if (sizeof(reset_vec) > MROM_SIZE_BYTES)
 		die("rom too small for reset verctor");
-	memcpy(soc_mrom, reset_vec, sizeof(reset_vec));
+	memcpy(soc->rom, reset_vec, sizeof(reset_vec));
 
 	/*
 	 * initialize one hart with a csr table

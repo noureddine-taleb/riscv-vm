@@ -6,7 +6,6 @@
 #include <types.h>
 #include <riscv_helper.h>
 
-// #define MMU_DEBUG_ENABLE
 #ifdef MMU_DEBUG_ENABLE
 #define MMU_DEBUG(...)       \
 	do                       \
@@ -77,8 +76,6 @@ int mmu_virt_to_phys(struct hart *hart,
 		(*virt_addr >> 21) & 0x1ff,
 		(*virt_addr >> 30) & 0x1ff,
 	};
-	// MMU_DEBUG("vpn[1] "PRINTF_FMT"\n", vpn[1]);
-	// MMU_DEBUG("vpn[0] "PRINTF_FMT"\n", vpn[0]);
 
 	/*
 	 * 1. Let a be satp.ppn × PAGESIZE, and let i = LEVELS − 1. (For Sv32, PAGESIZE=2^12 and LEVELS=2.)
@@ -189,8 +186,6 @@ int mmu_virt_to_phys(struct hart *hart,
 		(pte >> 19) & 0x1ff,
 		(pte >> 28) & 0x3ffffff,
 	};
-	// MMU_DEBUG("ppn[1]: %x\n", ppn[1]);
-	// MMU_DEBUG("ppn[0]: %x\n", ppn[0]);
 
 	/*
 	 * physical addresses are at least 34 Bits wide, so we need u64 here
@@ -223,10 +218,7 @@ int mmu_virt_to_phys(struct hart *hart,
 	 *  - This update and the loading of pte in step 2 must be atomic; in particular, no intervening store to the PTE may be perceived to have occurred in-between.
 	 */
 	if ((!(pte_flags & MMU_PAGE_ACCESSED)) || ((access_type == bus_write_access) && !(pte_flags & MMU_PAGE_DIRTY)))
-	{
-		// printf("pta.a or pte.d page fault!\n");
 		return -1;
-	}
 
 	/*
 	 * 8. The translation is successful. The translated physical address is given as follows:

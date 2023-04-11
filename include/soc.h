@@ -39,8 +39,8 @@ struct memory_mapping
 struct soc
 {
   struct hart hart0;
-  u8 *mrom;
-  u8 *ram;
+  u8 __attribute__((aligned(4))) rom[MROM_SIZE_BYTES];
+  u8 __attribute__((aligned(4))) ram[RAM_SIZE_BYTES];
 
   struct clint clint;
   struct plic plic;

@@ -5,7 +5,6 @@
 
 #include <types.h>
 #include <riscv_helper.h>
-#include <riscv_instr.h>
 #include <soc.h>
 
 #include <hart.h>
@@ -31,25 +30,11 @@ uxlen hart_fetch(struct hart *hart)
 							   &hart->instruction, sizeof(uxlen));
 }
 
-uxlen hart_decode(struct hart *hart)
-{
-	hart->opcode = (hart->instruction & 0x7F);
-	hart->rd = 0;
-	hart->rs1 = 0;
-	hart->rs2 = 0;
-	hart->func3 = 0;
-	hart->func7 = 0;
-	hart->immediate = 0;
-	hart->jump_offset = 0;
-
-	call_from_opcode_list(hart, &opcode_list_desc, hart->opcode);
-
-	return 0;
-}
+uxlen hart_decode(struct hart *hart);
 
 static uxlen hart_execute(struct hart *hart)
 {
-	hart->execute_cb(hart);
+	hart->execute(hart);
 
 	/*
 	 * clear x0 if any instruction has written into it

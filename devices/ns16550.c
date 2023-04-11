@@ -140,7 +140,6 @@ int uart_bus_access(struct ns16550 *uart, privilege_level priv_level,
 					u8 len)
 {
 	(void)priv_level;
-	u8 tmp = 0;
 	u8 *outval = value;
 	u8 val_u8 = 0;
 
@@ -267,9 +266,6 @@ int uart_bus_access(struct ns16550 *uart, privilege_level priv_level,
 u8 uart_check_interrupts(void *priv)
 {
 	struct ns16550 *uart = priv;
-	int i = 0;
-	u8 tmp_char = 0;
-	u8 tmp_fifo_len = 0;
 	u8 irq_trigger = 0;
 
 	if (!uart_tx_empty(uart))
