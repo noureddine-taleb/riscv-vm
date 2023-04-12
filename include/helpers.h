@@ -17,8 +17,8 @@
 
 #define ADDR_ALIGN_DOWN(n, m) ((n) / (m) * (m))
 
-#define ASSIGN_MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define ASSIGN_MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
 /*

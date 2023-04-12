@@ -15,6 +15,7 @@
 void NOP(struct hart __maybe_unused *hart)
 {}
 
+// fence
 void FENCE_I(struct hart __maybe_unused *hart)
 {}
 
@@ -24,17 +25,11 @@ void FENCE(struct hart __maybe_unused *hart)
 void FENCE_VMA(struct hart __maybe_unused *hart)
 {}
 
-/*
- * Implementations of the RISCV instructions
- */
 void WFI(struct hart __maybe_unused *hart)
 {
 	usleep(10000);
 }
 
-/*
- * RISCV Instructions
- */
 void LUI(struct hart __maybe_unused *hart)
 {
 	hart->x[hart->rd] = hart->imm;
@@ -76,6 +71,7 @@ void JALR(struct hart __maybe_unused *hart)
 	hart->x[hart->rd] = curr_pc;
 }
 
+// relative branches
 void BEQ(struct hart __maybe_unused *hart)
 {
 	if (hart->x[hart->rs1] == hart->x[hart->rs2])
@@ -110,10 +106,10 @@ void BNE(struct hart __maybe_unused *hart)
 
 void BLT(struct hart __maybe_unused *hart)
 {
-	ixlen signed_rs = hart->x[hart->rs1];
+	ixlen signed_rs1 = hart->x[hart->rs1];
 	ixlen signed_rs2 = hart->x[hart->rs2];
 
-	if (signed_rs < signed_rs2)
+	if (signed_rs1 < signed_rs2)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
@@ -129,10 +125,10 @@ void BLT(struct hart __maybe_unused *hart)
 
 void BGE(struct hart __maybe_unused *hart)
 {
-	ixlen signed_rs = hart->x[hart->rs1];
+	ixlen signed_rs1 = hart->x[hart->rs1];
 	ixlen signed_rs2 = hart->x[hart->rs2];
 
-	if (signed_rs >= signed_rs2)
+	if (signed_rs1 >= signed_rs2)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
@@ -178,6 +174,7 @@ void BGEU(struct hart __maybe_unused *hart)
 	}
 }
 
+// arithmetics
 void ADDI(struct hart __maybe_unused *hart)
 {
 	hart->x[hart->rd] = hart->imm + hart->x[hart->rs1];
@@ -273,6 +270,52 @@ void SRA(struct hart __maybe_unused *hart)
 	hart->x[hart->rd] = (ixlen)hart->x[hart->rs1] >> (hart->x[hart->rs2] & SHAMT_MASK);
 }
 
+void SRAIW(struct hart __maybe_unused *hart)
+{
+	hart->x[hart->rd] = (i32)hart->x[hart->rs1] >> (hart->imm & 0x1F);
+}
+
+void ADDIW(struct hart __maybe_unused *hart)
+{
+	hart->x[hart->rd] = (i32)hart->x[hart->rs1] + hart->imm;
+}
+
+void SLLIW(struct hart __maybe_unused *hart)
+{
+	hart->x[hart->rd] = (i32)hart->x[hart->rs1] << (hart->imm & 0x1F);
+}
+
+void SRLIW(struct hart __maybe_unused *hart)
+{
+	hart->x[hart->rd] = (i32)((u32)hart->x[hart->rs1] >> (hart->imm & 0x1F));
+}
+
+void SRLW(struct hart __maybe_unused *hart)
+{
+	hart->x[hart->rd] = (i32)((u32)hart->x[hart->rs1] >> (hart->x[hart->rs2] & 0x1F));
+}
+
+void SRAW(struct hart __maybe_unused *hart)
+{
+	hart->x[hart->rd] = (i32)hart->x[hart->rs1] >> (hart->x[hart->rs2] & 0x1F);
+}
+
+void SLLW(struct hart __maybe_unused *hart)
+{
+	hart->x[hart->rd] = (i32)hart->x[hart->rs1] << (hart->x[hart->rs2] & 0x1F);
+}
+
+void ADDW(struct hart __maybe_unused *hart)
+{
+	hart->x[hart->rd] = (i32)hart->x[hart->rs1] + (i32)hart->x[hart->rs2];
+}
+
+void SUBW(struct hart __maybe_unused *hart)
+{
+	hart->x[hart->rd] = (i32)hart->x[hart->rs1] - (i32)hart->x[hart->rs2];
+}
+
+// absolute loads
 void LB(struct hart __maybe_unused *hart)
 {
 	i8 tmp = 0;
@@ -318,6 +361,7 @@ void LHU(struct hart __maybe_unused *hart)
 		hart->x[hart->rd] = tmp;
 }
 
+// absolute stores
 void SB(struct hart __maybe_unused *hart)
 {
 	uxlen address = hart->x[hart->rs1] + hart->imm;
@@ -368,51 +412,7 @@ void SD(struct hart __maybe_unused *hart)
 						bus_write_access, address, &value, 8);
 }
 
-void SRAIW(struct hart __maybe_unused *hart)
-{
-	hart->x[hart->rd] = (i32)hart->x[hart->rs1] >> (hart->imm & 0x1F);
-}
-
-void ADDIW(struct hart __maybe_unused *hart)
-{
-	hart->x[hart->rd] = (i32)hart->x[hart->rs1] + hart->imm;
-}
-
-void SLLIW(struct hart __maybe_unused *hart)
-{
-	hart->x[hart->rd] = (i32)hart->x[hart->rs1] << (hart->imm & 0x1F);
-}
-
-void SRLIW(struct hart __maybe_unused *hart)
-{
-	hart->x[hart->rd] = (i32)((u32)hart->x[hart->rs1] >> (hart->imm & 0x1F));
-}
-
-void SRLW(struct hart __maybe_unused *hart)
-{
-	hart->x[hart->rd] = (i32)((u32)hart->x[hart->rs1] >> (hart->x[hart->rs2] & 0x1F));
-}
-
-void SRAW(struct hart __maybe_unused *hart)
-{
-	hart->x[hart->rd] = (i32)hart->x[hart->rs1] >> (hart->x[hart->rs2] & 0x1F);
-}
-
-void SLLW(struct hart __maybe_unused *hart)
-{
-	hart->x[hart->rd] = (i32)hart->x[hart->rs1] << (hart->x[hart->rs2] & 0x1F);
-}
-
-void ADDW(struct hart __maybe_unused *hart)
-{
-	hart->x[hart->rd] = (i32)hart->x[hart->rs1] + (i32)hart->x[hart->rs2];
-}
-
-void SUBW(struct hart __maybe_unused *hart)
-{
-	hart->x[hart->rd] = (i32)hart->x[hart->rs1] - (i32)hart->x[hart->rs2];
-}
-
+// csr
 void CSRRWx(struct hart *hart, uxlen new_val)
 {
 	uxlen csr_val = 0;
@@ -527,10 +527,10 @@ void CSRRCI(struct hart __maybe_unused *hart)
 	CSRRCx(hart, hart->rs1);
 }
 
+// ecalls
 void ECALL(struct hart __maybe_unused *hart)
 {
-	prepare_sync_trap(hart,
-					  trap_cause_user_ecall + hart->curr_priv_mode, 0);
+	prepare_sync_trap(hart, trap_cause_user_ecall + hart->curr_priv_mode, 0);
 }
 
 void EBREAK(struct hart __maybe_unused *hart)
@@ -548,18 +548,26 @@ void SRET(struct hart __maybe_unused *hart)
 	return_from_exception(hart, hart->curr_priv_mode);
 }
 
+// LR / SC
 void LR_W(struct hart __maybe_unused *hart)
 {
 	hart->lr_address = hart->x[hart->rs1];
 	hart->lr_valid = 1;
-	LW(hart);
+	i32 tmp;
+
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, hart->x[hart->rs1],
+								&tmp, 4))
+		return;
+	hart->x[hart->rd] = tmp;
 }
 
 void SC_W(struct hart __maybe_unused *hart)
 {
 	if (hart->lr_valid && (hart->lr_address == hart->x[hart->rs1]))
 	{
-		SW(hart);
+		if (hart->access_memory(hart, hart->curr_priv_mode,
+					bus_write_access, hart->x[hart->rs1], &hart->x[hart->rs2], 4))
+			return;
 		hart->x[hart->rd] = 0;
 	}
 	else
@@ -571,30 +579,67 @@ void SC_W(struct hart __maybe_unused *hart)
 	hart->lr_address = 0;
 }
 
+void LR_D(struct hart __maybe_unused *hart)
+{
+	hart->lr_valid = 1;
+	hart->lr_address = hart->x[hart->rs1];
+	i64 tmp;
+
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, hart->x[hart->rs1],
+								&tmp, 8))
+		return;
+	hart->x[hart->rd] = tmp;
+}
+
+void SC_D(struct hart __maybe_unused *hart)
+{
+	if (hart->lr_valid && (hart->lr_address == hart->x[hart->rs1]))
+	{
+		if (hart->access_memory(hart, hart->curr_priv_mode,
+					bus_write_access, hart->x[hart->rs1], &hart->x[hart->rs2], 8))
+			return;
+		hart->x[hart->rd] = 0;
+	}
+	else
+	{
+		hart->x[hart->rd] = 1;
+	}
+
+	hart->lr_valid = 0;
+	hart->lr_address = 0;
+}
+
+// atomic
 void AMOSWAP_W(struct hart __maybe_unused *hart)
 {
 	uxlen address = hart->x[hart->rs1];
 	u32 rs2_val = hart->x[hart->rs2];
-	u32 result = 0;
+	i32 tmp;
 
-	LW(hart);
-	result = rs2_val;
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 4))
+		return;
+	hart->x[hart->rd] = tmp;
 
 	hart->access_memory(hart, hart->curr_priv_mode,
-						bus_write_access, address, &result, 4);
+						bus_write_access, address, &rs2_val, 4);
 }
 
 void AMOADD_W(struct hart __maybe_unused *hart)
 {
 	uxlen address = hart->x[hart->rs1];
-	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
 	u32 result = 0;
+	i32 tmp;
 
-	LW(hart);
-	rd_val = hart->x[hart->rd];
-	result = rd_val + rs2_val;
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 4))
+		return;
 
+	hart->x[hart->rd] = tmp;
+
+	result = hart->x[hart->rd] + rs2_val;
+	
 	hart->access_memory(hart, hart->curr_priv_mode,
 						bus_write_access, address, &result, 4);
 }
@@ -605,8 +650,13 @@ void AMOXOR_W(struct hart __maybe_unused *hart)
 	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
 	u32 result = 0;
+	i32 tmp;
 
-	LW(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 4))
+		return;
+	hart->x[hart->rd] = tmp;
+
 	rd_val = hart->x[hart->rd];
 	result = rd_val ^ rs2_val;
 
@@ -620,8 +670,13 @@ void AMOAND_W(struct hart __maybe_unused *hart)
 	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
 	u32 result = 0;
+	i32 tmp;
 
-	LW(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 4))
+		return;
+	hart->x[hart->rd] = tmp;
+
 	rd_val = hart->x[hart->rd];
 	result = rd_val & rs2_val;
 
@@ -635,8 +690,13 @@ void AMOOR_W(struct hart __maybe_unused *hart)
 	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
 	u32 result = 0;
+	i32 tmp;
 
-	LW(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 4))
+		return;
+	hart->x[hart->rd] = tmp;
+
 	rd_val = hart->x[hart->rd];
 	result = rd_val | rs2_val;
 
@@ -650,11 +710,15 @@ void AMOMIN_W(struct hart __maybe_unused *hart)
 	i32 rd_val = 0;
 	i32 rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i32 tmp;
 
-	LW(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 4))
+		return;
+	hart->x[hart->rd] = tmp;
 
 	rd_val = hart->x[hart->rd];
-	result = ASSIGN_MIN(rd_val, rs2_val);
+	result = MIN(rd_val, rs2_val);
 
 	hart->access_memory(hart, hart->curr_priv_mode,
 						bus_write_access, address, &result, 4);
@@ -666,11 +730,15 @@ void AMOMAX_W(struct hart __maybe_unused *hart)
 	i32 rd_val = 0;
 	i32 rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i32 tmp;
 
-	LW(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 4))
+		return;
+	hart->x[hart->rd] = tmp;
 
 	rd_val = hart->x[hart->rd];
-	result = ASSIGN_MAX(rd_val, rs2_val);
+	result = MAX(rd_val, rs2_val);
 
 	hart->access_memory(hart, hart->curr_priv_mode,
 						bus_write_access, address, &result, 4);
@@ -682,11 +750,15 @@ void AMOMINU_W(struct hart __maybe_unused *hart)
 	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i32 tmp;
 
-	LW(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 4))
+		return;
+	hart->x[hart->rd] = tmp;
 
 	rd_val = hart->x[hart->rd];
-	result = ASSIGN_MIN(rd_val, rs2_val);
+	result = MIN(rd_val, rs2_val);
 
 	hart->access_memory(hart, hart->curr_priv_mode,
 						bus_write_access, address, &result, 4);
@@ -698,37 +770,18 @@ void AMOMAXU_W(struct hart __maybe_unused *hart)
 	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i32 tmp;
 
-	LW(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 4))
+		return;
+	hart->x[hart->rd] = tmp;
 
 	rd_val = hart->x[hart->rd];
-	result = ASSIGN_MAX(rd_val, rs2_val);
+	result = MAX(rd_val, rs2_val);
 
 	hart->access_memory(hart, hart->curr_priv_mode,
 						bus_write_access, address, &result, 4);
-}
-
-void LR_D(struct hart __maybe_unused *hart)
-{
-	hart->lr_valid = 1;
-	hart->lr_address = hart->x[hart->rs1];
-	LD(hart);
-}
-
-void SC_D(struct hart __maybe_unused *hart)
-{
-	if (hart->lr_valid && (hart->lr_address == hart->x[hart->rs1]))
-	{
-		SD(hart);
-		hart->x[hart->rd] = 0;
-	}
-	else
-	{
-		hart->x[hart->rd] = 1;
-	}
-
-	hart->lr_valid = 0;
-	hart->lr_address = 0;
 }
 
 void AMOSWAP_D(struct hart __maybe_unused *hart)
@@ -736,8 +789,12 @@ void AMOSWAP_D(struct hart __maybe_unused *hart)
 	uxlen address = hart->x[hart->rs1];
 	uxlen rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i64 tmp;
 
-	LD(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 8))
+		return;
+	hart->x[hart->rd] = tmp;
 	result = rs2_val;
 
 	hart->access_memory(hart, hart->curr_priv_mode,
@@ -750,8 +807,12 @@ void AMOADD_D(struct hart __maybe_unused *hart)
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i64 tmp;
 
-	LD(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 8))
+		return;
+	hart->x[hart->rd] = tmp;
 	rd_val = hart->x[hart->rd];
 	result = rd_val + rs2_val;
 
@@ -765,8 +826,12 @@ void AMOXOR_D(struct hart __maybe_unused *hart)
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i64 tmp;
 
-	LD(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 8))
+		return;
+	hart->x[hart->rd] = tmp;
 	rd_val = hart->x[hart->rd];
 	result = rd_val ^ rs2_val;
 
@@ -780,8 +845,12 @@ void AMOAND_D(struct hart __maybe_unused *hart)
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i64 tmp;
 
-	LD(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 8))
+		return;
+	hart->x[hart->rd] = tmp;
 	rd_val = hart->x[hart->rd];
 	result = rd_val & rs2_val;
 
@@ -795,8 +864,12 @@ void AMOOR_D(struct hart __maybe_unused *hart)
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i64 tmp;
 
-	LD(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 8))
+		return;
+	hart->x[hart->rd] = tmp;
 	rd_val = hart->x[hart->rd];
 	result = rd_val | rs2_val;
 
@@ -810,11 +883,15 @@ void AMOMIN_D(struct hart __maybe_unused *hart)
 	ixlen rd_val = 0;
 	ixlen rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i64 tmp;
 
-	LD(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 8))
+		return;
+	hart->x[hart->rd] = tmp;
 
 	rd_val = hart->x[hart->rd];
-	result = ASSIGN_MIN(rd_val, rs2_val);
+	result = MIN(rd_val, rs2_val);
 
 	hart->access_memory(hart, hart->curr_priv_mode,
 						bus_write_access, address, &result, 8);
@@ -826,11 +903,15 @@ void AMOMAX_D(struct hart __maybe_unused *hart)
 	ixlen rd_val = 0;
 	ixlen rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i64 tmp;
 
-	LD(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 8))
+		return;
+	hart->x[hart->rd] = tmp;
 
 	rd_val = hart->x[hart->rd];
-	result = ASSIGN_MAX(rd_val, rs2_val);
+	result = MAX(rd_val, rs2_val);
 
 	hart->access_memory(hart, hart->curr_priv_mode,
 						bus_write_access, address, &result, 8);
@@ -842,11 +923,15 @@ void AMOMINU_D(struct hart __maybe_unused *hart)
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i64 tmp;
 
-	LD(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 8))
+		return;
+	hart->x[hart->rd] = tmp;
 
 	rd_val = hart->x[hart->rd];
-	result = ASSIGN_MIN(rd_val, rs2_val);
+	result = MIN(rd_val, rs2_val);
 
 	hart->access_memory(hart, hart->curr_priv_mode,
 						bus_write_access, address, &result, 8);
@@ -858,19 +943,24 @@ void AMOMAXU_D(struct hart __maybe_unused *hart)
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
+	i64 tmp;
 
-	LD(hart);
+	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
+								&tmp, 8))
+		return;
+	hart->x[hart->rd] = tmp;
 
 	rd_val = hart->x[hart->rd];
-	result = ASSIGN_MAX(rd_val, rs2_val);
+	result = MAX(rd_val, rs2_val);
 
 	hart->access_memory(hart, hart->curr_priv_mode,
 						bus_write_access, address, &result, 8);
 }
 
+// multiplications
 void DIV(struct hart __maybe_unused *hart)
 {
-	ixlen signed_rs = hart->x[hart->rs1];
+	ixlen signed_rs1 = hart->x[hart->rs1];
 	ixlen signed_rs2 = hart->x[hart->rs2];
 
 	/*
@@ -885,18 +975,18 @@ void DIV(struct hart __maybe_unused *hart)
 	/*
 	 * overflow
 	 */
-	if (((uxlen)signed_rs == XLEN_INT_MIN) && (signed_rs2 == -1))
+	if (((uxlen)signed_rs1 == XLEN_INT_MIN) && (signed_rs2 == -1))
 	{
-		hart->x[hart->rd] = XLEN_INT_MIN;
+		hart->x[hart->rd] = signed_rs1;
 		return;
 	}
 
-	hart->x[hart->rd] = (signed_rs / signed_rs2);
+	hart->x[hart->rd] = (signed_rs1 / signed_rs2);
 }
 
 void DIVU(struct hart __maybe_unused *hart)
 {
-	uxlen unsigned_rs = hart->x[hart->rs1];
+	uxlen unsigned_rs1 = hart->x[hart->rs1];
 	uxlen unsigned_rs2 = hart->x[hart->rs2];
 
 	/*
@@ -908,12 +998,12 @@ void DIVU(struct hart __maybe_unused *hart)
 		return;
 	}
 
-	hart->x[hart->rd] = (unsigned_rs / unsigned_rs2);
+	hart->x[hart->rd] = (unsigned_rs1 / unsigned_rs2);
 }
 
 void REM(struct hart __maybe_unused *hart)
 {
-	ixlen signed_rs = hart->x[hart->rs1];
+	ixlen signed_rs1 = hart->x[hart->rs1];
 	ixlen signed_rs2 = hart->x[hart->rs2];
 
 	/*
@@ -921,25 +1011,25 @@ void REM(struct hart __maybe_unused *hart)
 	 */
 	if (signed_rs2 == 0)
 	{
-		hart->x[hart->rd] = signed_rs;
+		hart->x[hart->rd] = signed_rs1;
 		return;
 	}
 
 	/*
 	 * overflow
 	 */
-	if (((uxlen)signed_rs == XLEN_INT_MIN) && (signed_rs2 == -1))
+	if (((uxlen)signed_rs1 == XLEN_INT_MIN) && (signed_rs2 == -1))
 	{
 		hart->x[hart->rd] = 0;
 		return;
 	}
 
-	hart->x[hart->rd] = (signed_rs % signed_rs2);
+	hart->x[hart->rd] = (signed_rs1 % signed_rs2);
 }
 
 void REMU(struct hart __maybe_unused *hart)
 {
-	uxlen unsigned_rs = hart->x[hart->rs1];
+	uxlen unsigned_rs1 = hart->x[hart->rs1];
 	uxlen unsigned_rs2 = hart->x[hart->rs2];
 
 	/*
@@ -947,54 +1037,46 @@ void REMU(struct hart __maybe_unused *hart)
 	 */
 	if (unsigned_rs2 == 0)
 	{
-		hart->x[hart->rd] = unsigned_rs;
+		hart->x[hart->rd] = unsigned_rs1;
 		return;
 	}
 
-	hart->x[hart->rd] = (unsigned_rs % unsigned_rs2);
+	hart->x[hart->rd] = (unsigned_rs1 % unsigned_rs2);
 }
 
 void MUL(struct hart __maybe_unused *hart)
 {
-	ixlen signed_rs = hart->x[hart->rs1];
-	ixlen signed_rs2 = hart->x[hart->rs2];
-	hart->x[hart->rd] = signed_rs * signed_rs2;
+	hart->x[hart->rd] = (ixlen)hart->x[hart->rs1] * (ixlen)hart->x[hart->rs2];
 }
 
 void MULH(struct hart __maybe_unused *hart)
 {
-	ixlen result_hi = 0;
-	ixlen result_lo = 0;
-	__MUL(hart->x[hart->rs1], hart->x[hart->rs2], &result_hi, &result_lo);
-	hart->x[hart->rd] = result_hi;
+	i128 result = (i128)hart->x[hart->rs1] * (i128)hart->x[hart->rs2];
+	hart->x[hart->rd] = (uxlen)(result >> 64);
 }
 
 void MULHU(struct hart __maybe_unused *hart)
 {
-	uxlen result_hi = 0;
-	uxlen result_lo = 0;
-	__UMUL(hart->x[hart->rs1], hart->x[hart->rs2], &result_hi, &result_lo);
-	hart->x[hart->rd] = result_hi;
+	u128 result = (u128)hart->x[hart->rs1] * (u128)hart->x[hart->rs2];
+	hart->x[hart->rd] = (uxlen)(result >> 64);
 }
 
 void MULHSU(struct hart __maybe_unused *hart)
 {
-	ixlen result_hi = 0;
-	ixlen result_lo = 0;
-	__MULHSU(hart->x[hart->rs1], hart->x[hart->rs2], &result_hi, &result_lo);
-	hart->x[hart->rd] = result_hi;
+	u128 result = (i128)hart->x[hart->rs1] * (u128)hart->x[hart->rs2];
+	hart->x[hart->rd] = (uxlen)(result >> 64);
 }
 
 void MULW(struct hart __maybe_unused *hart)
 {
-	i32 signed_rs = hart->x[hart->rs1];
+	i32 signed_rs1 = hart->x[hart->rs1];
 	i32 signed_rs2 = hart->x[hart->rs2];
-	hart->x[hart->rd] = (ixlen)(signed_rs * signed_rs2);
+	hart->x[hart->rd] = (i32)(signed_rs1 * signed_rs2);
 }
 
 void DIVW(struct hart __maybe_unused *hart)
 {
-	i32 signed_rs = hart->x[hart->rs1];
+	i32 signed_rs1 = hart->x[hart->rs1];
 	i32 signed_rs2 = hart->x[hart->rs2];
 	i32 result = 0;
 
@@ -1010,22 +1092,22 @@ void DIVW(struct hart __maybe_unused *hart)
 	/*
 	 * overflow
 	 */
-	if ((signed_rs == INT32_MIN) && (signed_rs2 == -1))
+	if ((signed_rs1 == INT32_MIN) && (signed_rs2 == -1))
 	{
-		hart->x[hart->rd] = INT32_MIN;
+		hart->x[hart->rd] = signed_rs1;
 		return;
 	}
 
-	result = (signed_rs / signed_rs2);
+	result = (signed_rs1 / signed_rs2);
 
-	hart->x[hart->rd] = (ixlen)result;
+	hart->x[hart->rd] = result;
 }
 
 void DIVUW(struct hart __maybe_unused *hart)
 {
-	u32 unsigned_rs = hart->x[hart->rs1];
+	u32 unsigned_rs1 = hart->x[hart->rs1];
 	u32 unsigned_rs2 = hart->x[hart->rs2];
-	u32 result = 0;
+	i32 result = 0;
 
 	/*
 	 * division by zero
@@ -1036,14 +1118,14 @@ void DIVUW(struct hart __maybe_unused *hart)
 		return;
 	}
 
-	result = (unsigned_rs / unsigned_rs2);
+	result = (unsigned_rs1 / unsigned_rs2);
 
-	hart->x[hart->rd] = SIGNEX_BIT_31(result);
+	hart->x[hart->rd] = result;
 }
 
 void REMW(struct hart __maybe_unused *hart)
 {
-	i32 signed_rs = hart->x[hart->rs1];
+	i32 signed_rs1 = hart->x[hart->rs1];
 	i32 signed_rs2 = hart->x[hart->rs2];
 	i32 result = 0;
 
@@ -1052,27 +1134,27 @@ void REMW(struct hart __maybe_unused *hart)
 	 */
 	if (signed_rs2 == 0)
 	{
-		hart->x[hart->rd] = (ixlen)signed_rs;
+		hart->x[hart->rd] = (ixlen)signed_rs1;
 		return;
 	}
 
 	/*
 	 * overflow
 	 */
-	if ((signed_rs == INT32_MIN) && (signed_rs2 == -1))
+	if ((signed_rs1 == INT32_MIN) && (signed_rs2 == -1))
 	{
 		hart->x[hart->rd] = 0;
 		return;
 	}
 
-	result = (signed_rs % signed_rs2);
+	result = (signed_rs1 % signed_rs2);
 
 	hart->x[hart->rd] = (ixlen)result;
 }
 
 void REMUW(struct hart __maybe_unused *hart)
 {
-	u32 unsigned_rs = hart->x[hart->rs1];
+	u32 unsigned_rs1 = hart->x[hart->rs1];
 	u32 unsigned_rs2 = hart->x[hart->rs2];
 	u32 result = 0;
 
@@ -1081,24 +1163,18 @@ void REMUW(struct hart __maybe_unused *hart)
 	 */
 	if (unsigned_rs2 == 0)
 	{
-		hart->x[hart->rd] = SIGNEX_BIT_31(unsigned_rs);
+		hart->x[hart->rd] = (i32)unsigned_rs1;
 		return;
 	}
 
-	result = (unsigned_rs % unsigned_rs2);
+	result = (unsigned_rs1 % unsigned_rs2);
 
-	hart->x[hart->rd] = SIGNEX_BIT_31(result);
+	hart->x[hart->rd] = result;
 }
 
 uxlen hart_decode(struct hart *hart)
 {
 	hart->opcode = (hart->instruction & 0x7F);
-	hart->rd = 0;
-	hart->rs1 = 0;
-	hart->rs2 = 0;
-	hart->func3 = 0;
-	hart->func7 = 0;
-	hart->imm = 0;
 	switch(instruction_map[hart->opcode]) {
 		case R:
 			hart->rd = (hart->instruction >> 7) & 0x1f;
@@ -1217,7 +1293,7 @@ uxlen hart_decode(struct hart *hart)
 			hart->func3 = (hart->instruction >> 12) & 0x7;
 			hart->rs1 = (hart->instruction >> 15) & 0x1f;
 			hart->imm = (hart->instruction >> 20) & 0xfff;
-			hart->imm = SIGNEX_BIT_11(hart->imm);
+			hart->imm = SIGNEXTEND(hart->imm, 11);
 			// used by fence vma
 			hart->rs2 = (hart->instruction >> 20) & 0x1f;
 
@@ -1304,7 +1380,7 @@ uxlen hart_decode(struct hart *hart)
 			hart->rs2 = (hart->instruction >> 20) & 0x1F;
 			hart->imm = ((hart->instruction >> 25) << 5) |
 				((hart->instruction >> 7) & 0x1F);
-			hart->imm = SIGNEX_BIT_11(hart->imm);
+			hart->imm = SIGNEXTEND(hart->imm, 11);
 
 			if (hart->opcode == 0b0100011 && hart->func3 == 0b000)
 				hart->execute = SB;
@@ -1326,7 +1402,7 @@ uxlen hart_decode(struct hart *hart)
 						(GET_RANGE(hart->instruction, 25, 6) << 5) |
 						(GET_BIT(hart->instruction, 7) << 11) |
 						(GET_BIT(hart->instruction, 31) << 12);
-			hart->imm = SIGNEX_BIT_12(hart->imm);
+			hart->imm = SIGNEXTEND(hart->imm, 12);
 
 			if (hart->opcode == 0b1100011 && hart->func3 == 0b000)
 				hart->execute = BEQ;
@@ -1347,7 +1423,7 @@ uxlen hart_decode(struct hart *hart)
 		case U:
 			hart->rd = (hart->instruction >> 7) & 0x1F;
 			hart->imm = (hart->instruction >> 12) & 0xFFFFF;
-			hart->imm = SIGNEX_BIT_19(hart->imm) << 12;
+			hart->imm = SIGNEXTEND(hart->imm, 19) << 12;
 
 			if (hart->opcode == 0b0010111)
 				hart->execute = AUIPC;
@@ -1363,7 +1439,7 @@ uxlen hart_decode(struct hart *hart)
 						(GET_BIT(hart->instruction, 20) << 11) |
 						(GET_RANGE(hart->instruction, 12, 8) << 12) |
 						(GET_BIT(hart->instruction, 31) << 20);
-			hart->imm = SIGNEX_BIT_20(hart->imm);
+			hart->imm = SIGNEXTEND(hart->imm, 20);
 
 			if (hart->opcode == 0b1101111)
 				hart->execute = JAL;
