@@ -1,8 +1,8 @@
 CFLAGS := -Wall -Wextra -Iinclude -DUSE_SIMPLE_UART
 CC := clang
-TARGET := ./riscvem
+TARGET := ./riscv-vm
 FDT := ./dts/rv64_dt.dtb
-KERNEL := ../opensbi/build/platform/generic/firmware/fw_payload.bin
+KERNEL := kernel/fw_payload.bin
 
 SRCS := \
 	helpers/fifo.c  \
