@@ -1,4 +1,5 @@
-CFLAGS := -Wall -Wextra -Iinclude # -DUSE_SIMPLE_UART
+DEFINES := -DUSE_SIMPLE_UART
+CFLAGS := -Wall -Wextra -Iinclude $(DEFINES)
 CC := clang
 TARGET := ./riscv-vm
 FDT := ./dts/rv64_dt.dtb
@@ -29,11 +30,11 @@ $(TARGET): $(SRCS)
 	$(CC) $(CFLAGS) -o $@ $^
 
 %.dtb: %.dts
-	dtc -O dtb -o $@ $^
+	m4 $(DEFINES) < $^ | dtc -O dtb -o $@ -
 
 run: all
 	$(TARGET) $(FDT) $(KERNEL)
 
 clean:
-	-@rm $(TARGET) $(OBJS) 2>/dev/null
+	-@rm $(TARGET) $(FDT) $(OBJS) 2>/dev/null
 
