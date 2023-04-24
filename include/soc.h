@@ -5,7 +5,6 @@
 #include <types.h>
 
 #include <plic.h>
-#include <simple_uart.h>
 
 #define MROM_BASE_ADDR 0x1000UL
 #define MROM_SIZE_BYTES 0xf000UL
@@ -47,11 +46,7 @@ struct soc {
   struct clint clint;
   struct plic plic;
 
-#ifdef USE_SIMPLE_UART
-  struct simple_uart uart;
-#else
   struct uart_ns8250 uart8250;
-#endif
 
   struct memory_mapping mappings[6];
 };

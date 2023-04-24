@@ -11,7 +11,6 @@
 #include <termios.h>
 
 #include <riscv_helper.h>
-#include <simple_uart.h>
 #include <soc.h>
 
 struct soc soc;
@@ -48,11 +47,7 @@ void *uart_rx_thread(void *p) {
 	while (1) {
 		x = getchar();
 
-#ifdef USE_SIMPLE_UART
-		simple_uart_add_rx_char(&soc->uart, x);
-#else
 		uart_add_rx_char(&soc->uart8250, x);
-#endif
 	}
 }
 

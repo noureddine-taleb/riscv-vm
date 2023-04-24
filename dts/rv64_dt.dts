@@ -6,10 +6,7 @@
 	model = "riscv-virtio,qemu";
 
 	chosen {
-		ifdef(`USE_SIMPLE_UART', 
-			`bootargs = "earlycon=simple_uart,mmio,0x10000000 console=ttySU0 init=/bin/sh";',
-			`bootargs = "earlycon=ns16550a,mmio,0x10000000 console=ttyS0 init=/bin/sh";'
-		)
+		bootargs = "earlycon=ns16550a,mmio,0x10000000 console=ttyS0 init=/bin/sh";
 		stdout-path = "/uart@10000000";
 	};
 
@@ -62,23 +59,12 @@
 			riscv,max-priority = <7>;
 		};
 
-		ifdef(`USE_SIMPLE_UART', 
-			`
-				uart0: serial@10000000 {
-				interrupts = <0xa>;
-				interrupt-parent = <&plic0>;
-				clock-frequency = <0x384000>;
-				reg = <0x10000000 0x1>;
-				compatible = "simple-uart";
-		};',
-			`
-				uart0: serial@10000000 {
-				interrupts = <0xa>;
-				interrupt-parent = <&plic0>;
-				clock-frequency = <0x384000>;
-				reg = <0x10000000 0x100>;
-				compatible = "ns16550a";
-			};',
-		)
+		uart0: serial@10000000 {
+			interrupts = <0xa>;
+			interrupt-parent = <&plic0>;
+			clock-frequency = <0x384000>;
+			reg = <0x10000000 0x100>;
+			compatible = "ns16550a";
+		};
 	};
 };

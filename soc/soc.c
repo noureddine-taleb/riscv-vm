@@ -50,13 +50,8 @@ static void soc_init_mappings(struct soc *soc)
 			       CLINT_BASE_ADDR, CLINT_SIZE_BYTES);
 	INIT_MEM_ACCESS_STRUCT(soc, count++, plic_bus_access, &soc->plic,
 			       PLIC_BASE_ADDR, PLIC_SIZE_BYTES);
-#ifdef USE_SIMPLE_UART
-	INIT_MEM_ACCESS_STRUCT(soc, count++, simple_uart_bus_access, &soc->uart,
-			       SIMPLE_UART_TX_REG_ADDR, SIMPLE_UART_SIZE_BYTES);
-#else
 	INIT_MEM_ACCESS_STRUCT(soc, count++, uart_bus_access, &soc->uart8250,
 			       UART8250_TX_REG_ADDR, UART_NS8250_NR_REGS);
-#endif
 	INIT_MEM_ACCESS_STRUCT(soc, count++, memory_bus_access, soc->mrom,
 			       MROM_BASE_ADDR, MROM_SIZE_BYTES);
 }
@@ -149,11 +144,7 @@ void soc_init(struct soc *soc, char *fdt, char *kernel)
 	 */
 	hart_init(&soc->hart0, soc, MROM_BASE_ADDR);
 
-#ifdef USE_SIMPLE_UART
-	simple_uart_init(&soc->uart);
-#else
 	uart_init(&soc->uart8250);
-#endif
 
 	/*
 	 * initialize ram and peripheral read write access pointers 
@@ -174,11 +165,7 @@ void soc_run(struct soc *soc)
 		/*
 		 * update peripherals 
 		 */
-#ifdef USE_SIMPLE_UART
-		uart_irq_pending = simple_uart_check_irq(&soc->uart);
-#else
 		uart_irq_pending = uart_update(&soc->uart8250);
-#endif
 
 		/*
 		 * update interrupt controllers 

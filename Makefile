@@ -1,4 +1,4 @@
-DEFINES := -DUSE_SIMPLE_UART
+# DEFINES := -DUSE_SIMPLE_UART
 CFLAGS := -Wall -Wextra -Iinclude $(DEFINES)
 CC := clang
 TARGET := ./riscv-vm
@@ -17,7 +17,6 @@ SRCS := \
 	core/memory.c \
 	devices/clint.c  \
 	devices/plic.c  \
-	devices/simple_uart.c  \
 	devices/uart_8250.c  \
 	soc/soc.c \
 	main.c
