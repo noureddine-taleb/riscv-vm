@@ -1,4 +1,4 @@
-CFLAGS := -Wall -Wextra -Iinclude -DUSE_SIMPLE_UART
+CFLAGS := -Wall -Wextra -Iinclude # -DUSE_SIMPLE_UART
 CC := clang
 TARGET := ./riscv-vm
 FDT := ./dts/rv64_dt.dtb

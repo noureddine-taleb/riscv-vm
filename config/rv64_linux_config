@@ -233,7 +233,8 @@ CONFIG_RISCV_SBI_V01=y
 #
 # Boot options
 #
-CONFIG_CMDLINE="earlycon=simple_uart,mmio,0x3000000 console=ttySU0 init=/bin/sh"
+CONFIG_CMDLINE="earlycon=ns16550a,mmio,0x10000000 console=ttySU0 init=/bin/sh"
+# CONFIG_CMDLINE="earlycon=simple_uart,mmio,0x3000000 console=ttySU0 init=/bin/sh"
 # CONFIG_CMDLINE_FALLBACK is not set
 # CONFIG_CMDLINE_EXTEND is not set
 CONFIG_CMDLINE_FORCE=y
