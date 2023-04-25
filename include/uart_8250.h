@@ -11,11 +11,8 @@
 #define NO_IRQ_PENDING 1
 
 struct uart_ns8250 {
-	u8 dlab;
-	u8 tx_empty_ack;
-
 	/*
-	 * IRQ
+	 * IRQ flags
 	 */
 	u8 irq_enabled_rx;
 	u8 irq_enabled_tx;
@@ -26,9 +23,11 @@ struct uart_ns8250 {
 	struct __fifo rx_fifo;
 	u8 rx_fifo_data[UART_NS8250_FIFO_SIZE];
 
-	u8 regs[UART_NS8250_NR_REGS];
-
 	u8 scratch;
+	u8 dlab;
+	u8 tx_empty_ack;
+	u8 lcr; // Line Control Register
+	u8 mcr; // Modem Control Register
 
 	pthread_mutex_t lock;
 };

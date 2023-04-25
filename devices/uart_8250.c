@@ -18,8 +18,8 @@
   } while (0)
 #endif
 
-#define REG_RX_TX_DIV_LATCH_LO 0
-#define REG_IER_LATCH_HI 1
+#define REG_RX_TX 0
+#define REG_IER 1
 
 /*** COMMON REGS ***/
 /*
@@ -81,13 +81,13 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
   if (access_type == bus_write_access) {
 	val_u8 = *(u8 *)value;
 	switch (address) {
-	case REG_RX_TX_DIV_LATCH_LO:
+	case REG_RX_TX:
 	  if (!uart->dlab) {
 		fifo_in(&uart->tx_fifo, &val_u8, 1);
 		uart->tx_empty_ack = 0;
 	  }
 	  break;
-	case REG_IER_LATCH_HI:
+	case REG_IER:
 	  if (!uart->dlab) {
 		uart->irq_enabled_rx = extract8(val_u8, 0, 1);
 		uart->irq_enabled_tx = extract8(val_u8, 1, 1);
@@ -113,7 +113,7 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
 		fifo_reset(&uart->tx_fifo);
 	  break;
 	case REG_LCR:
-	  uart->regs[REG_LCR] = val_u8;
+	  uart->lcr = val_u8; // ignored except dlab bit
 	  uart->dlab = extract8(val_u8, 7, 1);
 
 	  UART_DBG("LCR: " PRINTF_FMT "\n", val_u8);
@@ -124,7 +124,7 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
 		UART_DBG("dlab deactivated\n");
 	  break;
 	case REG_MCR:
-	  uart->regs[REG_MCR] = val_u8;
+	  uart->mcr = val_u8; // ignored
 	  break;
 	case REG_SCRATCH:
 	  uart->scratch = val_u8;
@@ -134,16 +134,15 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
 	}
   } else {
 	switch (address) {
-	case REG_RX_TX_DIV_LATCH_LO:
+	case REG_RX_TX:
 	  if (!uart->dlab) {
 		fifo_out(&uart->rx_fifo, &tmp, 1);
 		*outval = tmp;
 	  }
 	  break;
-	case REG_IER_LATCH_HI:
+	case REG_IER:
 	  if (!uart->dlab) {
-		*outval = ((uart->irq_enabled_rx << 0) |
-				   (uart->irq_enabled_tx << 1));
+		*outval = (uart->irq_enabled_rx << 0) | (uart->irq_enabled_tx << 1);
 	  }
 	  break;
 	case REG_IIR:
@@ -157,26 +156,20 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
 	  break;
 	case REG_LSR: {
 	  u8 data_avail = (!fifo_is_empty(&uart->rx_fifo)) & 1;
-	  u8 overrun_err = 0;
-	  u8 parity_err = 0;
-	  u8 framing_err = 0;
-	  u8 brk_sig = 0;
 	  u8 thr_empty = (fifo_is_empty(&uart->tx_fifo)) & 1;
 	  u8 thr_empty_and_idle = thr_empty;
-	  u8 err_data_fifo = 0;
 
-	  *outval = (data_avail << 0 | overrun_err << 1 | parity_err << 2 |
-				 framing_err << 3 | brk_sig << 4 | thr_empty << 5 |
-				 thr_empty_and_idle << 6 | err_data_fifo << 7);
+	  *outval = (data_avail << 0 | thr_empty << 5 |
+				 thr_empty_and_idle << 6);
 	} break;
 	case REG_LCR:
-	  *outval = uart->regs[REG_LCR];
+	  *outval = uart->lcr;
 	  break;
 	case REG_MSR:
-	  *outval = 0xb0;
+	  *outval = 0xb0; // Carrier Detect | Data Set Ready | Clear To Send
 	  break;
 	case REG_MCR:
-	  *outval = 0x8;
+	  *outval = 0x8; // set Auxiliary Output 2
 	  break;
 	case REG_SCRATCH:
 	  *outval = uart->scratch;
@@ -187,9 +180,9 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
   }
 
   pthread_mutex_unlock(&uart->lock);
-  fprintf(stderr, "uart8250 reg=%lu(dlab=%d at=%s val=%d) priv=%d\n", address,
-         extract8(uart->regs[REG_LCR], 7, 1), access_type == bus_read_access ? "read" : "write", *outval,
-         priv_level);
+//   fprintf(stderr, "uart8250 reg=%lu(dlab=%d at=%s val=%d) priv=%d\n", address,
+//          uart->dlab, access_type == bus_read_access ? "read" : "write", *outval,
+//          priv_level);
 
   return 0;
 }
@@ -214,11 +207,11 @@ u8 uart_update(void *priv) {
 
   if (uart->irq_enabled_rx && fifo_len(&uart->rx_fifo)) {
 	irq_trigger = 1;
-	fprintf(stderr, "uart8250 data ready\n");
+	// fprintf(stderr, "uart8250 data ready\n");
 
   } else if (uart->irq_enabled_tx && fifo_is_empty(&uart->tx_fifo) && !uart->tx_empty_ack) {
 	irq_trigger = 1;
-	fprintf(stderr, "uart8250 fifo empty\n");
+	// fprintf(stderr, "uart8250 fifo empty\n");
   }
 
   pthread_mutex_unlock(&uart->lock);
