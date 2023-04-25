@@ -12,33 +12,19 @@
 
 struct uart_ns8250 {
 	u8 dlab;
+	u8 tx_empty_ack;
 
 	/*
 	 * IRQ
 	 */
-	u8 irq_enabled_rx_data_available;
-	u8 irq_enabled_tx_holding_reg_empty;
-	u8 irq_enabled_rlsr_change;
-	u8 irq_enabled_msr_change;
-	u8 irq_enabled_sleep;
-	u8 irq_enabled_low_power;
-
-	u8 tx_holding_reg_empty;
-	u8 tx_holding_irq_cleared;
-
-	u8 fifo_enabled;
+	u8 irq_enabled_rx;
+	u8 irq_enabled_tx;
 
 	struct __fifo tx_fifo;
 	u8 tx_fifo_data[UART_NS8250_FIFO_SIZE];
-	u8 tx_needs_flush;
-	u8 tx_stop_triggering;
 
 	struct __fifo rx_fifo;
 	u8 rx_fifo_data[UART_NS8250_FIFO_SIZE];
-	u8 rx_irq_fifo_level;
-	u8 lsr_change;
-
-	u8 curr_iir_id;
 
 	u8 regs[UART_NS8250_NR_REGS];
 

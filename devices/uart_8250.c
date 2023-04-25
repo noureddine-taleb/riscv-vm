@@ -63,13 +63,6 @@ void uart_init(struct uart_ns8250 *uart) {
 
   fifo_init(&uart->tx_fifo, uart->tx_fifo_data, UART_NS8250_FIFO_SIZE);
   fifo_init(&uart->rx_fifo, uart->rx_fifo_data, UART_NS8250_FIFO_SIZE);
-
-  /*
-   * no interrupt pending
-   */
-  // uart->regs[REG_IIR] = NO_IRQ_PENDING;
-  uart->rx_irq_fifo_level = 1;
-  uart->curr_iir_id = 1;
 }
 
 int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
@@ -79,14 +72,10 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
   u8 tmp = 0;
   u8 *outval = value;
   u8 val_u8 = 0;
-  u8 tmp_bits = 0;
 
   if (len != 1)
 	die("UART WRITE: Only single byte access allowed!\n");
 
-  // printf("uart8250 reg=%lu(at=%s val=%d) priv=%d\n", address,
-  //        access_type == bus_read_access ? "read" : "write", *outval,
-  //        priv_level);
   pthread_mutex_lock(&uart->lock);
 
   if (access_type == bus_write_access) {
@@ -95,67 +84,13 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
 	case REG_RX_TX_DIV_LATCH_LO:
 	  if (!uart->dlab) {
 		fifo_in(&uart->tx_fifo, &val_u8, 1);
-
-		if ((!uart->fifo_enabled) || (val_u8 == '\n'))
-		  uart->tx_needs_flush = 1;
-
-		if (uart->regs[REG_IIR] == 2) {
-		  uart->tx_stop_triggering = 0;
-		}
-	  } else {
-		/*
-		 * we do not support any dlab registers
-		 */
-		UART_DBG("DLAB Write Access " PRINTF_FMT " " PRINTF_FMT "!\n", address,
-				 val_u8);
+		uart->tx_empty_ack = 0;
 	  }
 	  break;
 	case REG_IER_LATCH_HI:
 	  if (!uart->dlab) {
-		uart->irq_enabled_rx_data_available = extract8(val_u8, 0, 1);
-		uart->irq_enabled_tx_holding_reg_empty = extract8(val_u8, 1, 1);
-		uart->irq_enabled_rlsr_change = extract8(val_u8, 2, 1);
-		uart->irq_enabled_msr_change = extract8(val_u8, 3, 1);
-		uart->irq_enabled_sleep = extract8(val_u8, 4, 1);
-		uart->irq_enabled_low_power = extract8(val_u8, 5, 1);
-
-		uart->regs[REG_IER_LATCH_HI] = val_u8;
-
-		// printf("\nIRQ ENABLE: rx_data: %x txh_empty:
-		//
-		//
-		// %x rlsr: %x msr: %x sleep: %x low_power:
-		// %x\n\n",
-		// uart->irq_enabled_rx_data_available,
-		// uart->irq_enabled_tx_holding_reg_empty,
-		// uart->irq_enabled_rlsr_change,
-		// uart->irq_enabled_msr_change,
-		// uart->irq_enabled_sleep,
-		// uart->irq_enabled_low_power
-		// );
-
-		// if(uart->irq_enabled_rx_data_available)
-		// die_msg("UART RX Interrupts currently not
-		// supported!\n");
-
-		// if(uart->irq_enabled_tx_holding_reg_empty)
-		// die_msg("UART TX Interrupts currently not
-		// supported!\n");
-
-		// /* Currently we do not support any other
-		// interrupts */
-		// tmp_val = extract32(val, 2, 6);
-		// if(tmp_val)
-		// die_msg("Currently only RX and TX interrupts
-		//
-		//
-		// supported!\n");
-	  } else {
-		/*
-		 * we do not support any dlab registers
-		 */
-		UART_DBG("DLAB Write Access " PRINTF_FMT " " PRINTF_FMT "!\n", address,
-				 val_u8);
+		uart->irq_enabled_rx = extract8(val_u8, 0, 1);
+		uart->irq_enabled_tx = extract8(val_u8, 1, 1);
 	  }
 	  break;
 	case REG_FCR:
@@ -176,16 +111,6 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
 	   */
 	  if (CHECK_BIT(val_u8, 2))
 		fifo_reset(&uart->tx_fifo);
-
-	  uart->fifo_enabled = extract8(val_u8, 0, 1);
-	  // printf("Fifo enabled: %x\n", uart->fifo_enabled);
-
-	  tmp_bits = extract8(val_u8, 6, 2);
-	  uart->rx_irq_fifo_level = (tmp_bits == 3)   ? 14
-								: (tmp_bits == 2) ? 8
-								: (tmp_bits == 1) ? 4
-												  : 1;
-	  // printf("fifo level %d\n", uart->rx_irq_fifo_level);
 	  break;
 	case REG_LCR:
 	  uart->regs[REG_LCR] = val_u8;
@@ -213,49 +138,24 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
 	  if (!uart->dlab) {
 		fifo_out(&uart->rx_fifo, &tmp, 1);
 		*outval = tmp;
-		// printf("RX: %c %d\n", tmp_out_val,
-		// uart->lsr_change);
-	  } else {
-		/*
-		 * we do not support any dlab registers
-		 */
-		UART_DBG("DLAB Read Access " PRINTF_FMT "!\n", address);
 	  }
 	  break;
 	case REG_IER_LATCH_HI:
 	  if (!uart->dlab) {
-		*outval = ((uart->irq_enabled_rx_data_available << 0) |
-				   (uart->irq_enabled_tx_holding_reg_empty << 1) |
-				   (uart->irq_enabled_rlsr_change << 2) |
-				   (uart->irq_enabled_msr_change << 3) |
-				   (uart->irq_enabled_sleep << 4) |
-				   (uart->irq_enabled_low_power << 5));
-	  } else {
-		/*
-		 * we do not support any dlab registers
-		 */
-		UART_DBG("DLAB Read Access " PRINTF_FMT "!\n", address);
-		outval = 0;
+		*outval = ((uart->irq_enabled_rx << 0) |
+				   (uart->irq_enabled_tx << 1));
 	  }
 	  break;
 	case REG_IIR:
-	  /*
-	   * 1 means no interrupt pending
-	   */
-	  // printf("RX: %x %d %d\n", uart->regs[REG_IIR],
-	  // uart->lsr_change, fifo_len(&uart->rx_fifo));
-	  *outval = uart->regs[REG_IIR];
-	  // uart->wait_for_iir_read = 0;
-	  if (uart->regs[REG_IIR] == 2) {
-		uart->curr_iir_id = NO_IRQ_PENDING;
-		uart->tx_stop_triggering = 1;
-	  }
+	   *outval = 1;
+		if (uart->irq_enabled_rx && fifo_len(&uart->rx_fifo)) {
+	  		*outval = 0b0100;
+		} else if (uart->irq_enabled_tx && fifo_is_empty(&uart->tx_fifo) && !uart->tx_empty_ack) {
+	  		*outval = 0b0010;
+			uart->tx_empty_ack = 1;
+		}
 	  break;
 	case REG_LSR: {
-	  /*
-	   * THR empty and line idle is always true here
-	   * in our emulation
-	   */
 	  u8 data_avail = (!fifo_is_empty(&uart->rx_fifo)) & 1;
 	  u8 overrun_err = 0;
 	  u8 parity_err = 0;
@@ -268,25 +168,14 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
 	  *outval = (data_avail << 0 | overrun_err << 1 | parity_err << 2 |
 				 framing_err << 3 | brk_sig << 4 | thr_empty << 5 |
 				 thr_empty_and_idle << 6 | err_data_fifo << 7);
-
-	  // printf("LSR! %x\n", *outval);
-
-	  if (uart->lsr_change)
-		uart->lsr_change = 0;
 	} break;
 	case REG_LCR:
 	  *outval = uart->regs[REG_LCR];
 	  break;
 	case REG_MSR:
-	  /*
-	   * Not supported currently
-	   */
 	  *outval = 0xb0;
 	  break;
 	case REG_MCR:
-	  /*
-	   * Not supported currently
-	   */
 	  *outval = 0x8;
 	  break;
 	case REG_SCRATCH:
@@ -298,6 +187,9 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
   }
 
   pthread_mutex_unlock(&uart->lock);
+  fprintf(stderr, "uart8250 reg=%lu(dlab=%d at=%s val=%d) priv=%d\n", address,
+         extract8(uart->regs[REG_LCR], 7, 1), access_type == bus_read_access ? "read" : "write", *outval,
+         priv_level);
 
   return 0;
 }
@@ -311,7 +203,7 @@ u8 uart_update(void *priv) {
 
   pthread_mutex_lock(&uart->lock);
 
-  if (fifo_is_full(&uart->tx_fifo) || uart->tx_needs_flush) {
+  if (fifo_is_full(&uart->tx_fifo)) {
 	tmp_fifo_len = fifo_len(&uart->tx_fifo);
 	for (i = 0; i < tmp_fifo_len; i++) {
 	  fifo_out(&uart->tx_fifo, &tmp_char, 1);
@@ -320,26 +212,14 @@ u8 uart_update(void *priv) {
 	fflush(stdout);
   }
 
-  if ((uart->irq_enabled_rlsr_change || uart->irq_enabled_rx_data_available) &&
-	  uart->lsr_change) {
-	// printf("RX\n");
+  if (uart->irq_enabled_rx && fifo_len(&uart->rx_fifo)) {
 	irq_trigger = 1;
-	uart->curr_iir_id = 0xC;
-	// uart->regs[REG_IIR] = 0xC;
-  } else if (uart->irq_enabled_rx_data_available &&
-			 (fifo_len(&uart->rx_fifo) >= uart->rx_irq_fifo_level)) {
-	// printf("RX\n");
-	irq_trigger = 1;
-	uart->curr_iir_id = 0x4;
-	// uart->regs[REG_IIR] = 0xC;
-  } else if ((uart->irq_enabled_tx_holding_reg_empty) &&
-			 fifo_is_empty(&uart->tx_fifo) && (!uart->tx_stop_triggering)) {
-	// printf("TX\n");
-	irq_trigger = 1;
-	uart->curr_iir_id = 0x2;
-  }
+	fprintf(stderr, "uart8250 data ready\n");
 
-  uart->regs[REG_IIR] = uart->curr_iir_id;
+  } else if (uart->irq_enabled_tx && fifo_is_empty(&uart->tx_fifo) && !uart->tx_empty_ack) {
+	irq_trigger = 1;
+	fprintf(stderr, "uart8250 fifo empty\n");
+  }
 
   pthread_mutex_unlock(&uart->lock);
 
@@ -349,13 +229,7 @@ u8 uart_update(void *priv) {
 void uart_add_rx_char(struct uart_ns8250 *uart, u8 x) {
   pthread_mutex_lock(&uart->lock);
 
-  // u8 tmp = 13;
   fifo_in(&uart->rx_fifo, &x, 1);
-  // fifo_in(&uart->rx_fifo, &tmp, 1);
-  uart->lsr_change = 1;
-
-  // printf("RX %x\n", x);
-  // assign_u8_bit(&uart->regs[REG_LSR], 0, 1);
 
   pthread_mutex_unlock(&uart->lock);
 }
