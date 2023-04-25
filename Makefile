@@ -23,10 +23,13 @@ SRCS := \
 
 OBJS := ${SRCS:.c=.o}
 
-all: $(TARGET) $(FDT)
+all: $(TARGET) $(FDT) $(KERNEL)
 
 $(TARGET): $(SRCS)
 	$(CC) $(CFLAGS) -o $@ $^
+
+$(KERNEL):
+	../kernel/build
 
 %.dtb: %.dts
 	m4 $(DEFINES) < $^ | dtc -O dtb -o $@ -
@@ -35,5 +38,5 @@ run: all
 	$(TARGET) $(FDT) $(KERNEL)
 
 clean:
-	-@rm $(TARGET) $(FDT) $(OBJS) 2>/dev/null
+	-@rm $(TARGET) $(FDT) $(KERNEL) $(OBJS) 2>/dev/null
 

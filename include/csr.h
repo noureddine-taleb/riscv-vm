@@ -22,6 +22,8 @@
 #define CSR_ADDR_MIE          0x304
 #define CSR_ADDR_MTVEC        0x305
 #define CSR_ADDR_MCOUNTEREN   0x306
+#define CSR_ADDR_MCOUNTERINHIBIT   0x320
+#define CSR_ADDR_MENVCFG   0x30a
 
 #define CSR_ADDR_MSCRATCH     0x340
 #define CSR_ADDR_MEPC         0x341
@@ -149,10 +151,12 @@ struct csr_backing_store {
 	uxlen mideleg;
 	uxlen mtvec;
 	uxlen mcounteren;
+	uxlen mcounterinhibit;
 	uxlen mscratch;
 	uxlen mepc;
 	uxlen mcause;
 	uxlen mtval;
+	uxlen menvcfg;
 
 	/*
 	 * supervisor regs 

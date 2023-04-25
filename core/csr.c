@@ -94,6 +94,8 @@ void hart_init_csr_regs(struct hart *hart)
 			     &hart->csr_store.mtvec);
 	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MCOUNTEREN, CSR_MASK_ZERO,
 			     &hart->csr_store.mcounteren);
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MCOUNTERINHIBIT, CSR_MASK_ZERO,
+			     &hart->csr_store.mcounterinhibit);
 
 	/*
 	 * Machine Trap Handling 
@@ -112,6 +114,9 @@ void hart_init_csr_regs(struct hart *hart)
 	/*
 	 * Machine Protection and Translation 
 	 */
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MENVCFG, CSR_MASK_ZERO,
+				&hart->csr_store.menvcfg);
+
 	for (i = 0; i < PMP_NR_CFG_REGS; i++) {
 		INIT_CSR_REG_SPECIAL(hart->csr_regs, (CSR_PMPCFG0 + i),
 				     CSR_MASK_WR_ALL,

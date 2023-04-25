@@ -680,7 +680,7 @@ void instr_EBREAK(struct hart *hart)
 void instr_MRET(struct hart *hart)
 {
 	CORE_DBG("%s: " PRINTF_FMT "\n", __func__,
-		 *hart->trap.m.regs[trap_reg_ip]);
+		 hart->csr_store.ip);
 	return_from_exception(hart, hart->curr_priv_mode);
 }
 

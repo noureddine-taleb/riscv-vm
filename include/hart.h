@@ -9,7 +9,7 @@
 #include <clint.h>
 
 #define NR_RVI_REGS 32
-// #define CORE_DEBUG
+
 #ifdef CORE_DEBUG
 #define CORE_DBG(...) do{ printf( __VA_ARGS__ ); } while( 0 )
 #else
