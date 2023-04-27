@@ -4,6 +4,7 @@
 #include <types.h>
 
 #include <stdbool.h>
+#include <pthread.h>
 
 #define UART_NS8250_FIFO_SIZE 1
 
