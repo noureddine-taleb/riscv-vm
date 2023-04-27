@@ -1,4 +1,3 @@
-# DEFINES := -DUSE_SIMPLE_UART
 CFLAGS := -Wall -Wextra -Iinclude $(DEFINES)
 CC := clang
 TARGET := ./riscv-vm

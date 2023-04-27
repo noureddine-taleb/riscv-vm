@@ -191,5 +191,6 @@ int csr_read_reg(struct csr_mapping *csr_regs,
 		 privilege_level curr_priv_mode, u16 address, uxlen *out_val);
 int csr_write_reg(struct csr_mapping *csr_regs,
 		  privilege_level curr_priv_mode, u16 address, uxlen val);
+char *get_csr_name(u16 addr);
 
 #endif /* RISCV_CSR_H */

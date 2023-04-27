@@ -34,9 +34,7 @@ int mmu_write_csr(__unused u16 address, struct csr_mapping *map, uxlen val)
 	int mode = (val >> 60);
 	if (mode != 0 && mode != MMU_SATP_MODE_SV39)
 		die("rv64 unsupported mode = %d", mode);	// todo: remove 
-	// 
-	// 
-	// this
+
 	*map->value = val;
 	return 0;
 }
