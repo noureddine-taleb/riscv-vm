@@ -60,7 +60,6 @@ char *csr_names[CSR_ADDR_MAX] = {
 
 	[0xF11] = "mvendorid",
 	[0xF12] = "marchid",
-	[0xF12] = "marchid",
 	[0xF13] = "mimpid",
 	[0xF14] = "mhartid",
 	[0xF15] = "mconfigptr",

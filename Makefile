@@ -25,7 +25,7 @@ OBJS := ${SRCS:.c=.o}
 all: $(TARGET) $(FDT) $(KERNEL)
 
 $(TARGET): $(SRCS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -lpthread -o $@ $^
 
 $(KERNEL):
 	../kernel/build
