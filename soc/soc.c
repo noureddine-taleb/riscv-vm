@@ -116,6 +116,7 @@ void soc_init(struct soc *soc, char *fdt, char *kernel)
 
 	/*
 	 * this is the reset vector, taken from qemu v5.2 
+	 * abi = firmware(hartid, fdt)
 	 */
 	u32 reset_vec[] = {
 		0x00000297,	/* 1: auipc t0, %pcrel_hi(fw_dyn) = get current 
