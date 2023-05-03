@@ -16,7 +16,7 @@ SRCS := \
 	core/memory.c \
 	devices/clint.c  \
 	devices/plic.c  \
-	devices/uart_8250.c  \
+	devices/ns16550.c  \
 	soc/soc.c \
 	main.c
 

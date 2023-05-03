@@ -19,10 +19,10 @@
 #define PLIC_BASE_ADDR 0x0C000000UL
 #define PLIC_SIZE_BYTES 0x3FFF004UL
 
-#define UART8250_TX_REG_ADDR 0x10000000UL
-#define UART_NS8250_NR_REGS 12
+#define UARTNS16550_TX_REG_ADDR 0x10000000UL
+#define UART_NS16550_NR_REGS 12
 
-#include <uart_8250.h>
+#include <ns16550.h>
 #define EXTENSION_TO_MISA(extension) (1 << (extension - 'A'))
 #define SUPPORTED_EXTENSIONS                                                   \
   (EXTENSION_TO_MISA('I') | EXTENSION_TO_MISA('M') | EXTENSION_TO_MISA('A') |  \
@@ -43,7 +43,7 @@ struct soc {
   struct clint clint;
   struct plic plic;
 
-  struct uart_ns8250 uart8250;
+  struct ns16550 ns16550;
 
   struct memory_mapping mappings[6];
 };

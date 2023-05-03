@@ -54,8 +54,8 @@
 #define UART_FIFO_FAIL 0
 #define UART_FIFO_SUCCESS 1
 
-void uart_init(struct uart_ns8250 *uart) {
-  memset(uart, 0, sizeof(struct uart_ns8250));
+void uart_init(struct ns16550 *uart) {
+  memset(uart, 0, sizeof(struct ns16550));
 
   if (pthread_mutex_init(&uart->rx_buf.lock, NULL) != 0) {
 	die("uart mutex init failed\n");
@@ -66,14 +66,14 @@ void uart_init(struct uart_ns8250 *uart) {
   }
 }
 
-void uart_put_char(struct uart_ns8250 *uart, u8 c) {
+void uart_put_char(struct ns16550 *uart, u8 c) {
 	pthread_mutex_lock(&uart->tx_buf.lock);
 	uart->tx_buf.data = c;
 	uart->tx_buf.full = true;
 	pthread_mutex_unlock(&uart->tx_buf.lock);
 }
 
-u8 uart_get_char(struct uart_ns8250 *uart) {
+u8 uart_get_char(struct ns16550 *uart) {
 	pthread_mutex_lock(&uart->rx_buf.lock);
 	u8 data = uart->rx_buf.data;
 	uart->rx_buf.full = false;
@@ -81,28 +81,28 @@ u8 uart_get_char(struct uart_ns8250 *uart) {
 	return data;
 }
 
-bool uart_rx_empty(struct uart_ns8250 *uart) {
+bool uart_rx_empty(struct ns16550 *uart) {
 	pthread_mutex_lock(&uart->rx_buf.lock);
 	bool b = uart->rx_buf.full;
 	pthread_mutex_unlock(&uart->rx_buf.lock);
 	return !b;
 }
 
-bool uart_tx_empty(struct uart_ns8250 *uart) {
+bool uart_tx_empty(struct ns16550 *uart) {
 	pthread_mutex_lock(&uart->tx_buf.lock);
 	bool b = uart->tx_buf.full;
 	pthread_mutex_unlock(&uart->tx_buf.lock);
 	return !b;
 }
 
-void uart_insert_char(struct uart_ns8250 *uart, u8 c) {
+void uart_insert_char(struct ns16550 *uart, u8 c) {
 	pthread_mutex_lock(&uart->rx_buf.lock);
 	uart->rx_buf.data = c;
 	uart->rx_buf.full = true;
 	pthread_mutex_unlock(&uart->rx_buf.lock);
 }
 
-u8 uart_fetch_char(struct uart_ns8250 *uart) {
+u8 uart_fetch_char(struct ns16550 *uart) {
 	pthread_mutex_lock(&uart->tx_buf.lock);
 	u8 data = uart->tx_buf.data;
 	uart->tx_buf.full = false;
@@ -110,19 +110,19 @@ u8 uart_fetch_char(struct uart_ns8250 *uart) {
 	return data;
 }
 
-void uart_tx_reset(struct uart_ns8250 *uart) {
+void uart_tx_reset(struct ns16550 *uart) {
 	pthread_mutex_lock(&uart->tx_buf.lock);
 	uart->tx_buf.full = false;
 	pthread_mutex_unlock(&uart->tx_buf.lock);
 }
 
-void uart_rx_reset(struct uart_ns8250 *uart) {
+void uart_rx_reset(struct ns16550 *uart) {
 	pthread_mutex_lock(&uart->rx_buf.lock);
 	uart->rx_buf.full = false;
 	pthread_mutex_unlock(&uart->rx_buf.lock);
 }
 
-int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
+int uart_bus_access(struct ns16550 *uart, privilege_level priv_level,
 					bus_access_type access_type, uxlen address, void *value,
 					u8 len) {
   (void)priv_level;
@@ -233,15 +233,11 @@ int uart_bus_access(struct uart_ns8250 *uart, privilege_level priv_level,
 	}
   }
 
-//   fprintf(stderr, "uart8250 reg=%lu(dlab=%d at=%s val=%d) priv=%d\n", address,
-//          uart->dlab, access_type == bus_read_access ? "read" : "write", *outval,
-//          priv_level);
-
   return 0;
 }
 
-u8 uart_update(void *priv) {
-  struct uart_ns8250 *uart = priv;
+u8 uart_check_interrupts(void *priv) {
+  struct ns16550 *uart = priv;
   int i = 0;
   u8 tmp_char = 0;
   u8 tmp_fifo_len = 0;
@@ -254,16 +250,14 @@ u8 uart_update(void *priv) {
 
   if (uart->irq_enabled_rx && !uart_rx_empty(uart)) {
 	irq_trigger = 1;
-	// fprintf(stderr, "uart8250 data ready\n");
 
   } else if (uart->irq_enabled_tx && uart_tx_empty(uart) && !uart->tx_empty_ack) {
 	irq_trigger = 1;
-	// fprintf(stderr, "uart8250 fifo empty\n");
   }
 
   return irq_trigger;
 }
 
-void uart_add_rx_char(struct uart_ns8250 *uart, u8 x) {
+void uart_add_rx_char(struct ns16550 *uart, u8 x) {
 	uart_insert_char(uart, x);
 }

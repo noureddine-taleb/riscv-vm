@@ -50,8 +50,8 @@ static void soc_init_mappings(struct soc *soc)
 			       CLINT_BASE_ADDR, CLINT_SIZE_BYTES);
 	INIT_MEM_ACCESS_STRUCT(soc, count++, plic_bus_access, &soc->plic,
 			       PLIC_BASE_ADDR, PLIC_SIZE_BYTES);
-	INIT_MEM_ACCESS_STRUCT(soc, count++, uart_bus_access, &soc->uart8250,
-			       UART8250_TX_REG_ADDR, UART_NS8250_NR_REGS);
+	INIT_MEM_ACCESS_STRUCT(soc, count++, uart_bus_access, &soc->ns16550,
+			       UARTNS16550_TX_REG_ADDR, UART_NS16550_NR_REGS);
 	INIT_MEM_ACCESS_STRUCT(soc, count++, memory_bus_access, soc->mrom,
 			       MROM_BASE_ADDR, MROM_SIZE_BYTES);
 }
@@ -145,7 +145,7 @@ void soc_init(struct soc *soc, char *fdt, char *kernel)
 	 */
 	hart_init(&soc->hart0, soc, MROM_BASE_ADDR);
 
-	uart_init(&soc->uart8250);
+	uart_init(&soc->ns16550);
 
 	/*
 	 * initialize ram and peripheral read write access pointers 

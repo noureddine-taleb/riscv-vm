@@ -47,7 +47,7 @@ void *uart_rx_thread(void *p) {
 	while (1) {
 		x = getchar();
 
-		uart_add_rx_char(&soc->uart8250, x);
+		uart_add_rx_char(&soc->ns16550, x);
 	}
 }
 
