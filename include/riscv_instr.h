@@ -2,7 +2,7 @@
 #define RISCV_INSTR_H
 
 /*
- * R-Type Instructions 
+ * R-Type Instructions
  */
 #define INSTR_ADD_SUB_SLL_SLT_SLTU_XOR_SRL_SRA_OR_AND_MUL_MULH_MULHSU_MULHU_DIV_DIVU_REM_REMU 0x33
 #define FUNC3_INSTR_ADD_SUB_MUL 0x0
@@ -33,20 +33,20 @@
 #define FUNC7_INSTR_REMU 0x01
 
 /*
- * I-Type Instructions 
+ * I-Type Instructions
  */
 #define INSTR_JALR 0x67
-#define FUNC3_INSTR_JALR    0x0
+#define FUNC3_INSTR_JALR 0x0
 
 #define INSTR_ADDI_SLTI_SLTIU_XORI_ORI_ANDI_SLLI_SRLI_SRAI 0x13
-#define FUNC3_INSTR_ADDI    0x0
-#define FUNC3_INSTR_SLTI    0x2
+#define FUNC3_INSTR_ADDI 0x0
+#define FUNC3_INSTR_SLTI 0x2
 #define FUNC3_INSTR_SLTIU 0x3
-#define FUNC3_INSTR_XORI    0x4
-#define FUNC3_INSTR_ORI     0x6
-#define FUNC3_INSTR_ANDI    0x7
-#define FUNC3_INSTR_SLLI    0x1
-#define FUNC3_INSTR_SRLI_SRAI  0x5
+#define FUNC3_INSTR_XORI 0x4
+#define FUNC3_INSTR_ORI 0x6
+#define FUNC3_INSTR_ANDI 0x7
+#define FUNC3_INSTR_SLLI 0x1
+#define FUNC3_INSTR_SRLI_SRAI 0x5
 #define FUNC7_INSTR_SRLI 0x0
 #define FUNC7_INSTR_SRAI 0x20
 #define FUNC6_INSTR_SRLI 0x0
@@ -62,7 +62,7 @@
 #define FUNC3_INSTR_LD 0x3
 
 /*
- * S-Type Instructions 
+ * S-Type Instructions
  */
 #define INSTR_SB_SH_SW_SD 0x23
 #define FUNC3_INSTR_SB 0x0
@@ -71,7 +71,7 @@
 #define FUNC3_INSTR_SD 0x3
 
 /*
- * B-Type Instructions 
+ * B-Type Instructions
  */
 #define INSTR_BEQ_BNE_BLT_BGE_BLTU_BGEU 0x63
 #define FUNC3_INSTR_BEQ 0x0
@@ -82,19 +82,19 @@
 #define FUNC3_INSTR_BGEU 0x7
 
 /*
- * U-Type Instructions 
+ * U-Type Instructions
  */
-#define INSTR_LUI 0x37		/* LOAD UPPER IMMEDIATE INTO DESTINATION
-				 * REGISTER */
-#define INSTR_AUIPC 0x17	/* ADD UPPER IMMEDIATE TO PROGRAM COUNTER */
+#define INSTR_LUI 0x37	 /* LOAD UPPER IMMEDIATE INTO DESTINATION \
+						  * REGISTER */
+#define INSTR_AUIPC 0x17 /* ADD UPPER IMMEDIATE TO PROGRAM COUNTER */
 
 /*
- * J-Type Instructions 
+ * J-Type Instructions
  */
-#define INSTR_JAL 0x6F		/* JUMP and Link */
+#define INSTR_JAL 0x6F /* JUMP and Link */
 
 /*
- * System level instructions 
+ * System level instructions
  */
 #define INSTR_FENCE_FENCE_I 0x0F
 #define FUNC3_INSTR_FENCE 0x0
@@ -102,9 +102,9 @@
 
 #define INSTR_ECALL_EBREAK_MRET_SRET_URET_WFI_CSRRW_CSRRS_CSRRC_CSRRWI_CSRRSI_CSRRCI_SFENCEVMA 0x73
 #define FUNC3_INSTR_ECALL_EBREAK_MRET_SRET_URET_WFI_SFENCEVMA 0x0
-	/*
-	 * FUNC12 will be splitted in FUNC7 and FUNC5 
-	 */
+/*
+ * FUNC12 will be splitted in FUNC7 and FUNC5
+ */
 #define FUNC7_INSTR_ECALL_EBREAK_URET 0x0
 #define FUNC5_INSTR_ECALL 0x0
 #define FUNC5_INSTR_EBREAK 0x1
@@ -144,7 +144,7 @@
 #define FUNC3_INSTR_REMUW 0x7
 
 /*
- * Atomic Instructions 
+ * Atomic Instructions
  */
 #define INSTR_AMO_W_D_LR_SC_SWAP_ADD_XOR_AND_OR_MIN_MAX_MINU_MAXU 0x2F
 #define FUNC3_INSTR_W_LR_SC_SWAP_ADD_XOR_AND_OR_MIN_MAX_MINU_MAXU 0x2

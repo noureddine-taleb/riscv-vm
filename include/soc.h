@@ -10,7 +10,7 @@
 #define MROM_SIZE_BYTES 0xf000UL
 
 #define RAM_BASE_ADDR 0x80000000UL
-#define RAM_SIZE_BYTES                                                         \
+#define RAM_SIZE_BYTES \
   0x8000000UL /* 128MB such as the default for the qemu virt * machine */
 
 #define CLINT_BASE_ADDR 0x2000000UL
@@ -24,18 +24,20 @@
 
 #include <ns16550.h>
 #define EXTENSION_TO_MISA(extension) (1 << (extension - 'A'))
-#define SUPPORTED_EXTENSIONS                                                   \
-  (EXTENSION_TO_MISA('I') | EXTENSION_TO_MISA('M') | EXTENSION_TO_MISA('A') |  \
+#define SUPPORTED_EXTENSIONS                                                  \
+  (EXTENSION_TO_MISA('I') | EXTENSION_TO_MISA('M') | EXTENSION_TO_MISA('A') | \
    EXTENSION_TO_MISA('S') | EXTENSION_TO_MISA('U'))
 
-struct memory_mapping {
+struct memory_mapping
+{
   bus_access_func bus_access;
   void *priv;
   uxlen addr_start;
   uxlen mem_size;
 };
 
-struct soc {
+struct soc
+{
   struct hart hart0;
   u8 *mrom;
   u8 *ram;
@@ -51,6 +53,6 @@ struct soc {
 void soc_init(struct soc *soc, char *fw_file_name, char *dtb_file_name);
 void soc_run(struct soc *soc);
 int soc_bus_access(struct soc *soc, privilege_level priv_level,
-				   bus_access_type access_type, uxlen address, void *value,
-				   u8 len);
+                   bus_access_type access_type, uxlen address, void *value,
+                   u8 len);
 #endif /* RISCV_EXAMPLE_SOC_H */

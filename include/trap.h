@@ -1,7 +1,7 @@
 /*
  * Trap setup and trap handling registers seem to be shared across privilege
  * levels but with different access permissions. So we try to unify those
- * registers here. 
+ * registers here.
  */
 #ifndef RISCV_TRAP_H
 #define RISCV_TRAP_H
@@ -16,17 +16,18 @@
 #define TRAP_XSTATUS_SPIE_BIT 5
 #define TRAP_XSTATUS_MPIE_BIT 7
 #define TRAP_XSTATUS_SPP_BIT 8
-#define TRAP_XSTATUS_MPP_BIT 11	/* and 12 */
+#define TRAP_XSTATUS_MPP_BIT 11 /* and 12 */
 #define TRAP_XSTATUS_MPBIT 17
 #define TRAP_XSTATUS_SUM_BIT 18
 #define TRAP_XSTATUS_MXR_BIT 19
 #define TRAP_XSTATUS_TSR_BIT 22
 
-#define GET_GLOBAL_IRQ_BIT(priv_level) (1<<priv_level)
-#define GET_LOCAL_IRQ_BIT(priv_level, trap_type) ( (1<<(priv_level_max*trap_type)) << priv_level )
-#define GET_EXCEPTION_BIT(trap_cause) ( 1 << trap_cause )
+#define GET_GLOBAL_IRQ_BIT(priv_level) (1 << priv_level)
+#define GET_LOCAL_IRQ_BIT(priv_level, trap_type) ((1 << (priv_level_max * trap_type)) << priv_level)
+#define GET_EXCEPTION_BIT(trap_cause) (1 << trap_cause)
 
-enum interrupt_cause {
+enum interrupt_cause
+{
 	trap_cause_irq_min = -1,
 
 	trap_cause_user_swi = 0,
@@ -45,7 +46,8 @@ enum interrupt_cause {
 	trap_cause_machine_exti
 };
 
-enum trap_cause {
+enum trap_cause
+{
 	trap_cause_instr_addr_misalign = 0,
 	trap_cause_instr_access_fault,
 	trap_cause_illegal_instr,
@@ -64,7 +66,8 @@ enum trap_cause {
 	trap_cause_store_amo_page_fault
 };
 
-enum interrupt_type {
+enum interrupt_type
+{
 	trap_type_unknown = -1,
 	trap_type_swi = 0,
 	trap_type_ti,
@@ -72,17 +75,17 @@ enum interrupt_type {
 };
 
 void hart_update_ip(struct hart *hart, u8 ext_int, u8 tim_int,
-			   u8 sw_int);
+					u8 sw_int);
 int interrupt_check_pending(struct hart *hart, privilege_level curr_priv_mode,
-			    enum interrupt_cause irq,
-			    privilege_level *serving_priv_level);
+							enum interrupt_cause irq,
+							privilege_level *serving_priv_level);
 privilege_level trap_get_serving_priv_level(struct hart *hart,
-					    privilege_level curr_priv_mode,
-					    enum trap_cause cause);
+											privilege_level curr_priv_mode,
+											enum trap_cause cause);
 void serve_exception(struct hart *hart, privilege_level serving_priv_mode,
-		     privilege_level previous_priv_mode, uxlen is_interrupt,
-		     uxlen cause, uxlen curr_pc, uxlen tval);
+					 privilege_level previous_priv_mode, uxlen is_interrupt,
+					 uxlen cause, uxlen curr_pc, uxlen tval);
 void return_from_exception(struct hart *hart,
-			   privilege_level serving_priv_mode);
+						   privilege_level serving_priv_mode);
 
 #endif /* RISCV_TRAP_H */

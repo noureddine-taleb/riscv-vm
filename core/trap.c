@@ -10,7 +10,7 @@ void hart_update_ip(struct hart *hart, u8 ext_int, u8 tim_int, u8 sw_int)
 	/*
 	 * IRQ coming from the clint are only assigned to machine mode bits,
 	 * all other bits are actually pure SW interrupts, set for e.g. by
-	 * m-mode context 
+	 * m-mode context
 	 */
 
 	/*
@@ -18,39 +18,38 @@ void hart_update_ip(struct hart *hart, u8 ext_int, u8 tim_int, u8 sw_int)
 	 * supervisor-level external interrupts. The logical-OR of the
 	 * software-writeable bit and the signal from the external interrupt
 	 * controller is used to generate external interrupts to the
-	 * supervisor." 
+	 * supervisor."
 	 */
 
 	/*
-	 * Get seip, if it is possibly set to 1 by SW 
+	 * Get seip, if it is possibly set to 1 by SW
 	 */
 	assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_exti,
-			ext_int);
+					ext_int);
 
 	/*
-	 * Special seip handling 
+	 * Special seip handling
 	 */
 	assign_xlen_bit(&hart->csr_store.ip, trap_cause_super_exti,
-			ext_int);
+					ext_int);
 
 	assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_ti,
-			tim_int);
+					tim_int);
 
 	assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_swi,
-			sw_int);
+					sw_int);
 }
 
-int
-interrupt_check_pending(struct hart *hart,
-			privilege_level curr_priv_mode,
-			enum interrupt_cause irq,
-			privilege_level *serving_priv_level)
+int interrupt_check_pending(struct hart *hart,
+							privilege_level curr_priv_mode,
+							enum interrupt_cause irq,
+							privilege_level *serving_priv_level)
 {
 	uxlen interrupt_bit = (1 << irq);
 	privilege_level delegation_level = 0;
 	*serving_priv_level = machine_mode;
 
-	if (!((hart->csr_store.status >> curr_priv_mode) & 1))	// xIE = disabled
+	if (!((hart->csr_store.status >> curr_priv_mode) & 1)) // xIE = disabled
 		return 0;
 
 	if (!(hart->csr_store.ip & interrupt_bit & hart->csr_store.ie))
@@ -70,8 +69,8 @@ interrupt_check_pending(struct hart *hart,
 
 privilege_level
 trap_get_serving_priv_level(struct hart *hart,
-			    privilege_level curr_priv_mode,
-			    enum trap_cause cause)
+							privilege_level curr_priv_mode,
+							enum trap_cause cause)
 {
 	uxlen exception_bit = (1 << cause);
 	privilege_level serving_priv_mode;
@@ -87,23 +86,23 @@ trap_get_serving_priv_level(struct hart *hart,
 	return serving_priv_mode;
 }
 
-void
-serve_exception(struct hart *hart,
-		privilege_level serving_priv_mode,
-		privilege_level previous_priv_mode,
-		uxlen is_interrupt, uxlen cause, uxlen curr_pc, uxlen tval)
+void serve_exception(struct hart *hart,
+					 privilege_level serving_priv_mode,
+					 privilege_level previous_priv_mode,
+					 uxlen is_interrupt, uxlen cause, uxlen curr_pc, uxlen tval)
 {
 	uxlen ie = 0;
 
-	if (serving_priv_mode == machine_mode) {
+	if (serving_priv_mode == machine_mode)
+	{
 		hart->csr_store.mepc = curr_pc;
 		assign_xlen_value_within_reg(&hart->csr_store.status,
-					     TRAP_XSTATUS_MPP_BIT,
-					     previous_priv_mode, 0x3);
+									 TRAP_XSTATUS_MPP_BIT,
+									 previous_priv_mode, 0x3);
 
 		ie = (hart->csr_store.status >> serving_priv_mode) & 0x1;
 		assign_xlen_bit(&hart->csr_store.status,
-				TRAP_XSTATUS_UPIE_BIT + serving_priv_mode, ie);
+						TRAP_XSTATUS_UPIE_BIT + serving_priv_mode, ie);
 
 		CLEAR_BIT(hart->csr_store.status, serving_priv_mode);
 
@@ -111,25 +110,28 @@ serve_exception(struct hart *hart,
 		hart->csr_store.mtval = tval;
 
 		hart->pc = hart->csr_store.mtvec;
-
-	} else if (serving_priv_mode == supervisor_mode) {
+	}
+	else if (serving_priv_mode == supervisor_mode)
+	{
 		hart->csr_store.sepc = curr_pc;
 		assign_xlen_value_within_reg(&hart->csr_store.status,
-					     TRAP_XSTATUS_SPP_BIT,
-					     previous_priv_mode, 0x1);
+									 TRAP_XSTATUS_SPP_BIT,
+									 previous_priv_mode, 0x1);
 
 		ie = (hart->csr_store.status >> serving_priv_mode) & 0x1;
 		assign_xlen_bit(&hart->csr_store.status,
-				TRAP_XSTATUS_UPIE_BIT + serving_priv_mode, ie);
+						TRAP_XSTATUS_UPIE_BIT + serving_priv_mode, ie);
 		CLEAR_BIT(hart->csr_store.status, serving_priv_mode);
 
 		hart->csr_store.stval = tval;
 		hart->csr_store.scause = ((is_interrupt << (XLEN - 1)) | cause);
 
 		hart->pc = hart->csr_store.stvec;
-	} else {
+	}
+	else
+	{
 		die("handling exceptions by unsupported priv level = %d",
-		    serving_priv_mode);
+			serving_priv_mode);
 	}
 	hart->curr_priv_mode = serving_priv_mode;
 }
@@ -139,43 +141,51 @@ void return_from_exception(struct hart *hart, privilege_level serving_priv_mode)
 	privilege_level previous_priv_level = 0;
 	uxlen pie = 0;
 
-	if (serving_priv_mode == machine_mode) {
+	if (serving_priv_mode == machine_mode)
+	{
 		previous_priv_level =
-		    extractxlen(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT,
-				2);
+			extractxlen(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT,
+						2);
 		hart->curr_priv_mode = previous_priv_level;
 		hart->next_pc = hart->csr_store.mepc;
 
 		pie =
-		    (hart->csr_store.status >> (TRAP_XSTATUS_UPIE_BIT +
-						serving_priv_mode)) & 0x1;
+			(hart->csr_store.status >> (TRAP_XSTATUS_UPIE_BIT +
+										serving_priv_mode)) &
+			0x1;
 		assign_xlen_bit(&hart->csr_store.status, serving_priv_mode,
-				pie);
+						pie);
 		CLEAR_BIT(hart->csr_store.status,
-			  (TRAP_XSTATUS_UPIE_BIT + serving_priv_mode));
-	} else if (serving_priv_mode == supervisor_mode) {
+				  (TRAP_XSTATUS_UPIE_BIT + serving_priv_mode));
+	}
+	else if (serving_priv_mode == supervisor_mode)
+	{
 		previous_priv_level =
-		    extractxlen(hart->csr_store.status, TRAP_XSTATUS_SPP_BIT,
-				1);
+			extractxlen(hart->csr_store.status, TRAP_XSTATUS_SPP_BIT,
+						1);
 		hart->curr_priv_mode = previous_priv_level;
 		hart->next_pc = hart->csr_store.sepc;
 
 		pie =
-		    (hart->csr_store.status >> (TRAP_XSTATUS_UPIE_BIT +
-						serving_priv_mode)) & 0x1;
+			(hart->csr_store.status >> (TRAP_XSTATUS_UPIE_BIT +
+										serving_priv_mode)) &
+			0x1;
 		assign_xlen_bit(&hart->csr_store.status, serving_priv_mode,
-				pie);
+						pie);
 		CLEAR_BIT(hart->csr_store.status,
-			  (TRAP_XSTATUS_UPIE_BIT + serving_priv_mode));
-	} else {
+				  (TRAP_XSTATUS_UPIE_BIT + serving_priv_mode));
+	}
+	else
+	{
 		die("returning from exception by unsupported priv level = %d",
-		    serving_priv_mode);
+			serving_priv_mode);
 	}
 }
 
 void prepare_sync_trap(struct hart *hart, uxlen cause, uxlen tval)
 {
-	if (!hart->sync_trap_pending) {
+	if (!hart->sync_trap_pending)
+	{
 		hart->sync_trap_pending = 1;
 		hart->sync_trap_cause = cause;
 		hart->sync_trap_tval = tval;
@@ -186,16 +196,17 @@ u8 hart_handle_pending_interrupts(struct hart *hart)
 {
 	privilege_level serving_priv_level = machine_mode;
 
-	if (hart->sync_trap_pending) {
+	if (hart->sync_trap_pending)
+	{
 		serving_priv_level =
-		    trap_get_serving_priv_level(hart,
-						hart->curr_priv_mode,
-						hart->sync_trap_cause);
+			trap_get_serving_priv_level(hart,
+										hart->curr_priv_mode,
+										hart->sync_trap_cause);
 
 		serve_exception(hart, serving_priv_level,
-				hart->curr_priv_mode, 0,
-				hart->sync_trap_cause, hart->pc - 4,
-				hart->sync_trap_tval);
+						hart->curr_priv_mode, 0,
+						hart->sync_trap_cause, hart->pc - 4,
+						hart->sync_trap_tval);
 		// todo: to opt
 		hart->sync_trap_pending = 0;
 		hart->sync_trap_cause = 0;
@@ -204,22 +215,23 @@ u8 hart_handle_pending_interrupts(struct hart *hart)
 	}
 
 	for (enum interrupt_cause interrupt_cause =
-	     trap_cause_machine_exti;
-	     interrupt_cause >= trap_cause_user_swi; interrupt_cause--) {
+			 trap_cause_machine_exti;
+		 interrupt_cause >= trap_cause_user_swi; interrupt_cause--)
+	{
 		int trap_retval = interrupt_check_pending(hart,
-							  hart->curr_priv_mode,
-							  interrupt_cause,
-							  &serving_priv_level);
-		if (trap_retval) {
+												  hart->curr_priv_mode,
+												  interrupt_cause,
+												  &serving_priv_level);
+		if (trap_retval)
+		{
 			serve_exception(hart,
-					serving_priv_level,
-					hart->curr_priv_mode, 1,
-					interrupt_cause, hart->pc,
-					hart->sync_trap_tval);
+							serving_priv_level,
+							hart->curr_priv_mode, 1,
+							interrupt_cause, hart->pc,
+							hart->sync_trap_tval);
 			return 1;
 		}
 	}
 
 	return 0;
 }
-

@@ -11,14 +11,16 @@
 #define IRQ_PENDING 0
 #define NO_IRQ_PENDING 1
 
-struct uart_buffer {
+struct uart_buffer
+{
 	bool full;
 	u8 data;
 
 	pthread_mutex_t lock;
 };
 
-struct ns16550 {
+struct ns16550
+{
 	/*
 	 * IRQ flags
 	 */
@@ -37,8 +39,8 @@ struct ns16550 {
 
 void uart_init(struct ns16550 *uart);
 int uart_bus_access(struct ns16550 *uart, privilege_level priv_level,
-										bus_access_type access_type, uxlen address, void *value,
-										u8 len);
+					bus_access_type access_type, uxlen address, void *value,
+					u8 len);
 u8 uart_check_interrupts(void *priv);
 void uart_add_rx_char(struct ns16550 *uart, u8 x);
 

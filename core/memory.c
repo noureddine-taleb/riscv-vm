@@ -4,35 +4,32 @@
 #include <helpers.h>
 #include <soc.h>
 
-int
-__access_protected_memory(int skip, struct hart *hart,
-			  privilege_level priv_level,
-			  bus_access_type access_type, uxlen addr,
-			  void *value, u8 len)
+int __access_protected_memory(int skip, struct hart *hart,
+							  privilege_level priv_level,
+							  bus_access_type access_type, uxlen addr,
+							  void *value, u8 len)
 {
 
 	static check_protection memory_protection_layers[] = {
 		vm_check,
-		pmp_check
-	};
+		pmp_check};
 
 	int layers = ARRAY_SIZE(memory_protection_layers);
-	for (int i = skip; i < layers; i++) {
-		if (memory_protection_layers[i]
-		    (hart, priv_level, access_type, &addr, value, len) < 0)
+	for (int i = skip; i < layers; i++)
+	{
+		if (memory_protection_layers[i](hart, priv_level, access_type, &addr, value, len) < 0)
 			return -1;
 	}
 
 	return soc_bus_access(hart->soc, priv_level, access_type, addr, value,
-			      len);
+						  len);
 }
 
-int
-access_protected_memory(struct hart *hart,
-			privilege_level priv_level,
-			bus_access_type access_type, uxlen addr,
-			void *value, u8 len)
+int access_protected_memory(struct hart *hart,
+							privilege_level priv_level,
+							bus_access_type access_type, uxlen addr,
+							void *value, u8 len)
 {
 	return __access_protected_memory(0, hart, priv_level,
-					 access_type, addr, value, len);
+									 access_type, addr, value, len);
 }

@@ -7,9 +7,16 @@
 
 // #define PLIC_DEBUG
 #ifdef PLIC_DEBUG
-#define PLIC_DBG(...) do{ printf( __VA_ARGS__ ); } while( 0 )
+#define PLIC_DBG(...)        \
+	do                       \
+	{                        \
+		printf(__VA_ARGS__); \
+	} while (0)
 #else
-#define PLIC_DBG(...) do{ } while ( 0 )
+#define PLIC_DBG(...) \
+	do                \
+	{                 \
+	} while (0)
 #endif
 
 #define PLIC_MAX_INTERRUPTS 255
@@ -30,46 +37,48 @@
 #define PLIC_PRIO_CLAIM_SIZE_BYTES 0x4
 
 static u8 *get_u8_reg_ptr(struct plic *plic, uxlen address,
-			  u8 *is_claim_complete)
+						  u8 *is_claim_complete)
 {
 	u8 *ret_ptr = NULL;
 	uxlen tmp_address = 0;
 
-	if (address < PLIC_PRIORITY_SIZE_BYTES) {
+	if (address < PLIC_PRIORITY_SIZE_BYTES)
+	{
 		tmp_address = address - PLIC_PRIORITY_ADDR_OFFS;
 		/*
-		 * first one is actually reserved 
+		 * first one is actually reserved
 		 */
-		if (tmp_address >= 0x4) {
-			ret_ptr = (u8 *) plic->priority;
+		if (tmp_address >= 0x4)
+		{
+			ret_ptr = (u8 *)plic->priority;
 			return &ret_ptr[tmp_address];
 		}
-	} else
-	    if (ADDR_WITHIN
-		(address, PLIC_PENDING_ADDR_OFFS, PLIC_PENDING_SIZE_BYTES)) {
+	}
+	else if (ADDR_WITHIN(address, PLIC_PENDING_ADDR_OFFS, PLIC_PENDING_SIZE_BYTES))
+	{
 		tmp_address = address - PLIC_PENDING_ADDR_OFFS;
-		ret_ptr = (u8 *) plic->pending_bits;
+		ret_ptr = (u8 *)plic->pending_bits;
 		return &ret_ptr[tmp_address];
-	} else
-	    if (ADDR_WITHIN
-		(address, PLIC_IRQ_ENABLE_ADDR_OFFS,
-		 PLIC_IRQ_ENABLE_SIZE_BYTES)) {
+	}
+	else if (ADDR_WITHIN(address, PLIC_IRQ_ENABLE_ADDR_OFFS,
+						 PLIC_IRQ_ENABLE_SIZE_BYTES))
+	{
 		tmp_address = address - PLIC_IRQ_ENABLE_ADDR_OFFS;
-		ret_ptr = (u8 *) plic->enable_bits;
+		ret_ptr = (u8 *)plic->enable_bits;
 		return &ret_ptr[tmp_address];
-	} else
-	    if (ADDR_WITHIN
-		(address, PLIC_PRIO_THRESH_ADDR_OFFS,
-		 PLIC_PRIO_THRESH_SIZE_BYTES)) {
+	}
+	else if (ADDR_WITHIN(address, PLIC_PRIO_THRESH_ADDR_OFFS,
+						 PLIC_PRIO_THRESH_SIZE_BYTES))
+	{
 		tmp_address = address - PLIC_PRIO_THRESH_ADDR_OFFS;
-		ret_ptr = (u8 *) & plic->priority_threshold;
+		ret_ptr = (u8 *)&plic->priority_threshold;
 		return &ret_ptr[tmp_address];
-	} else
-	    if (ADDR_WITHIN
-		(address, PLIC_PRIO_CLAIM_ADDR_OFFS,
-		 PLIC_PRIO_CLAIM_SIZE_BYTES)) {
+	}
+	else if (ADDR_WITHIN(address, PLIC_PRIO_CLAIM_ADDR_OFFS,
+						 PLIC_PRIO_CLAIM_SIZE_BYTES))
+	{
 		tmp_address = address - PLIC_PRIO_CLAIM_ADDR_OFFS;
-		ret_ptr = (u8 *) & plic->claim_complete;
+		ret_ptr = (u8 *)&plic->claim_complete;
 		*is_claim_complete = 1;
 		return &ret_ptr[tmp_address];
 	}
@@ -81,7 +90,8 @@ static void plic_check_sanity(struct plic *plic)
 {
 	u32 i = 0;
 
-	for (i = 0; i < NR_PRIO_MEM_REGS; i++) {
+	for (i = 0; i < NR_PRIO_MEM_REGS; i++)
+	{
 		plic->priority[i] = plic->priority[i] & 0x7;
 	}
 
@@ -104,32 +114,37 @@ u8 plic_check_interrupts(struct plic *plic)
 	u8 highest_prio = 0;
 
 	/*
-	 * check for any enabled interrupt and threshold 
+	 * check for any enabled interrupt and threshold
 	 */
-	for (i = 0; i < NR_ENABLE_REGS; i++) {
+	for (i = 0; i < NR_ENABLE_REGS; i++)
+	{
 		if ((!plic->enable_bits[i]) || (!plic->pending_bits[i]))
 			continue;
 
-		for (j = 0; j < sizeof(plic->enable_bits[0]) * 8; j++) {
+		for (j = 0; j < sizeof(plic->enable_bits[0]) * 8; j++)
+		{
 			if (CHECK_BIT(plic->enable_bits[i], j) &&
-			    CHECK_BIT(plic->pending_bits[i], j) &&
-			    (plic->priority[irq_id_count] >=
-			     plic->priority_threshold)) {
-				if (CHECK_BIT(plic->claimed_bits[i], j)) {
+				CHECK_BIT(plic->pending_bits[i], j) &&
+				(plic->priority[irq_id_count] >=
+				 plic->priority_threshold))
+			{
+				if (CHECK_BIT(plic->claimed_bits[i], j))
+				{
 					/*
-					 * qemu also seems to clear pending bit 
-					 * if it was already claimed 
+					 * qemu also seems to clear pending bit
+					 * if it was already claimed
 					 */
 					assign_u32_bit(&plic->pending_bits[i],
-						       j, 0);
-				} else
-				    if ((plic->priority[irq_id_count] >
-					 highest_prio)) {
+								   j, 0);
+				}
+				else if ((plic->priority[irq_id_count] >
+						  highest_prio))
+				{
 					/*
-					 * find irq with highest prio 
+					 * find irq with highest prio
 					 */
 					highest_prio =
-					    plic->priority[irq_id_count];
+						plic->priority[irq_id_count];
 					irq_to_trigger = irq_id_count;
 				}
 			}
@@ -138,20 +153,22 @@ u8 plic_check_interrupts(struct plic *plic)
 		}
 	}
 
-	if (irq_to_trigger > 0) {
+	if (irq_to_trigger > 0)
+	{
 		PLIC_DBG("plic !!IRQ!! trigger! %d\n", irq_to_trigger);
 		plic->claim_complete = irq_to_trigger;
 		return 1;
-	} else {
+	}
+	else
+	{
 		plic->claim_complete = 0;
 	}
 
 	return 0;
 }
 
-int
-plic_bus_access(struct plic *plic, privilege_level priv_level,
-		bus_access_type access_type, uxlen address, void *value, u8 len)
+int plic_bus_access(struct plic *plic, privilege_level priv_level,
+					bus_access_type access_type, uxlen address, void *value, u8 len)
 {
 	(void)priv_level;
 	u8 is_claim_complete = 0;
@@ -160,40 +177,46 @@ plic_bus_access(struct plic *plic, privilege_level priv_level,
 	u8 *u8_ptr = get_u8_reg_ptr(plic, address, &is_claim_complete);
 	u32 tmp_val = 0;
 
-	if (u8_ptr) {
-		if (access_type == bus_write_access) {
+	if (u8_ptr)
+	{
+		if (access_type == bus_write_access)
+		{
 			memcpy(u8_ptr, value, len);
-			tmp_val = *(u32 *) value;
+			tmp_val = *(u32 *)value;
 			// printf("plic write access! "PRINTF_FMT" %x\n",
 			// address, tmp_val);
 			/*
-			 * check if it is the claim complete reg 
+			 * check if it is the claim complete reg
 			 */
-			if (is_claim_complete) {
+			if (is_claim_complete)
+			{
 				PLIC_DBG("CLAIM WRITE! %lx\n", val);
 				irq_reg = tmp_val / 32;
 				irq_bit = tmp_val % 32;
 				assign_u32_bit(&plic->claimed_bits[irq_reg],
-					       irq_bit, 0);
+							   irq_bit, 0);
 			}
 			/*
-			 * be sure that all updated values are sane 
+			 * be sure that all updated values are sane
 			 */
 			plic_check_sanity(plic);
-		} else {
+		}
+		else
+		{
 			memcpy(value, u8_ptr, len);
-			tmp_val = *(u32 *) u8_ptr;
+			tmp_val = *(u32 *)u8_ptr;
 			/*
-			 * check if it is the claim complete reg 
+			 * check if it is the claim complete reg
 			 */
-			if (is_claim_complete) {
+			if (is_claim_complete)
+			{
 				PLIC_DBG("CLAIM READ! %lx\n", *out_val);
 				irq_reg = tmp_val / 32;
 				irq_bit = tmp_val % 32;
-				if (CHECK_BIT
-				    (plic->pending_bits[irq_reg], irq_bit))
+				if (CHECK_BIT(plic->pending_bits[irq_reg], irq_bit))
 					assign_u32_bit(&plic->claimed_bits
-						       [irq_reg], irq_bit, 1);
+										[irq_reg],
+								   irq_bit, 1);
 			}
 		}
 	}

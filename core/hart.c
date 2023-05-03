@@ -27,8 +27,8 @@ uxlen hart_fetch(struct hart *hart)
 	uxlen addr = hart->pc;
 
 	return hart->access_memory(hart, hart->curr_priv_mode,
-				   bus_instr_access, addr,
-				   &hart->instruction, sizeof(uxlen));
+							   bus_instr_access, addr,
+							   &hart->instruction, sizeof(uxlen));
 }
 
 uxlen hart_decode(struct hart *hart)
@@ -52,7 +52,7 @@ static uxlen hart_execute(struct hart *hart)
 	hart->execute_cb(hart);
 
 	/*
-	 * clear x0 if any instruction has written into it 
+	 * clear x0 if any instruction has written into it
 	 */
 	hart->x[0] = 0;
 
@@ -63,13 +63,14 @@ void hart_run(struct hart *hart)
 {
 	hart->next_pc = 0;
 
-	if (hart_fetch(hart) == 0) {
+	if (hart_fetch(hart) == 0)
+	{
 		hart_decode(hart);
 		hart_execute(hart);
 	}
 
 	/*
-	 * increase program counter here 
+	 * increase program counter here
 	 */
 	hart->pc = hart->next_pc ? hart->next_pc : hart->pc + 4;
 

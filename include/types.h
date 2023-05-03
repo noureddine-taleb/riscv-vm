@@ -20,18 +20,20 @@ typedef int64_t i64;
 typedef u64 uxlen;
 typedef i64 ixlen;
 
-typedef enum {
-	priv_level_unknown = -1,	/* This just ensures that the enum is
-					 * signed, which might be needed in
-					 * down counting for loops */
+typedef enum
+{
+	priv_level_unknown = -1, /* This just ensures that the enum is
+							  * signed, which might be needed in
+							  * down counting for loops */
 	user_mode = 0,
 	supervisor_mode = 1,
-	reserved_mode = 2,	/* Hypervisor ?? */
+	reserved_mode = 2, /* Hypervisor ?? */
 	machine_mode = 3,
 	priv_level_max = 4
 } privilege_level;
 
-typedef enum {
+typedef enum
+{
 	bus_read_access = 0,
 	bus_write_access,
 	bus_instr_access,
@@ -43,12 +45,12 @@ struct hart;
 struct csr_mapping;
 struct soc;
 typedef int (*bus_access_func)(struct hart *priv,
-			       privilege_level priv_level,
-			       bus_access_type access_type, uxlen addr,
-			       void *value, u8 len);
+							   privilege_level priv_level,
+							   bus_access_type access_type, uxlen addr,
+							   void *value, u8 len);
 typedef int (*check_protection)(struct hart *priv,
-				privilege_level priv_level,
-				bus_access_type access_type, uxlen *addr,
-				void *value, u8 len);
+								privilege_level priv_level,
+								bus_access_type access_type, uxlen *addr,
+								void *value, u8 len);
 
 #endif /* RISCV_TYPES_H */
