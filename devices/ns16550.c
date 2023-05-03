@@ -170,19 +170,19 @@ int uart_bus_access(struct ns16550 *uart, privilege_level priv_level,
 			/*
 			 * DMA mode
 			 */
-			if (CHECK_BIT(val_u8, 3))
+			if (GET_BIT(val_u8, 3))
 				die("DMA mode not supported!\n");
 
 			/*
 			 * Clear RX fifo
 			 */
-			if (CHECK_BIT(val_u8, 1))
+			if (GET_BIT(val_u8, 1))
 				uart_rx_reset(uart);
 
 			/*
 			 * Clear TX fifo
 			 */
-			if (CHECK_BIT(val_u8, 2))
+			if (GET_BIT(val_u8, 2))
 				uart_tx_reset(uart);
 			break;
 		case REG_LCR:

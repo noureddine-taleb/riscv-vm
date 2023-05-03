@@ -273,14 +273,8 @@ int vm_check(struct hart *hart, privilege_level priv_level,
 		die("unreachable");
 	}
 
-	u8 mxr = CHECK_BIT(hart->csr_store.status,
-					   TRAP_XSTATUS_MXR_BIT)
-				 ? 1
-				 : 0;
-	u8 sum = CHECK_BIT(hart->csr_store.status,
-					   TRAP_XSTATUS_SUM_BIT)
-				 ? 1
-				 : 0;
+	u8 mxr = GET_BIT(hart->csr_store.status, TRAP_XSTATUS_MXR_BIT);
+	u8 sum = GET_BIT(hart->csr_store.status, TRAP_XSTATUS_SUM_BIT);
 
 	if (mmu_virt_to_phys(hart, internal_priv_level, addr,
 						 access_type, mxr, sum))

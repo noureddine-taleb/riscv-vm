@@ -5,7 +5,7 @@
 #include <hart.h>
 #include <riscv_helper.h>
 
-void hart_update_ip(struct hart *hart, u8 ext_int, u8 tim_int, u8 sw_int)
+void hart_update_ip(struct hart *hart, u8 mei, u8 mti, u8 msi)
 {
 	/*
 	 * IRQ coming from the clint are only assigned to machine mode bits,
@@ -24,20 +24,16 @@ void hart_update_ip(struct hart *hart, u8 ext_int, u8 tim_int, u8 sw_int)
 	/*
 	 * Get seip, if it is possibly set to 1 by SW
 	 */
-	assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_exti,
-					ext_int);
+	UPDATE_BIT(hart->csr_store.ip, trap_cause_machine_exti, mei);
 
 	/*
 	 * Special seip handling
 	 */
-	assign_xlen_bit(&hart->csr_store.ip, trap_cause_super_exti,
-					ext_int);
+	UPDATE_BIT(hart->csr_store.ip, trap_cause_super_exti, mei);
 
-	assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_ti,
-					tim_int);
+	UPDATE_BIT(hart->csr_store.ip, trap_cause_machine_ti, mti);
 
-	assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_swi,
-					sw_int);
+	UPDATE_BIT(hart->csr_store.ip, trap_cause_machine_swi, msi);
 }
 
 int interrupt_check_pending(struct hart *hart,
@@ -101,8 +97,7 @@ void serve_exception(struct hart *hart,
 									 previous_priv_mode, 0x3);
 
 		ie = (hart->csr_store.status >> serving_priv_mode) & 0x1;
-		assign_xlen_bit(&hart->csr_store.status,
-						TRAP_XSTATUS_UPIE_BIT + serving_priv_mode, ie);
+		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_UPIE_BIT + serving_priv_mode, ie);
 
 		CLEAR_BIT(hart->csr_store.status, serving_priv_mode);
 
@@ -119,8 +114,7 @@ void serve_exception(struct hart *hart,
 									 previous_priv_mode, 0x1);
 
 		ie = (hart->csr_store.status >> serving_priv_mode) & 0x1;
-		assign_xlen_bit(&hart->csr_store.status,
-						TRAP_XSTATUS_UPIE_BIT + serving_priv_mode, ie);
+		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_UPIE_BIT + serving_priv_mode, ie);
 		CLEAR_BIT(hart->csr_store.status, serving_priv_mode);
 
 		hart->csr_store.stval = tval;
@@ -153,8 +147,7 @@ void return_from_exception(struct hart *hart, privilege_level serving_priv_mode)
 			(hart->csr_store.status >> (TRAP_XSTATUS_UPIE_BIT +
 										serving_priv_mode)) &
 			0x1;
-		assign_xlen_bit(&hart->csr_store.status, serving_priv_mode,
-						pie);
+		UPDATE_BIT(hart->csr_store.status, serving_priv_mode, pie);
 		CLEAR_BIT(hart->csr_store.status,
 				  (TRAP_XSTATUS_UPIE_BIT + serving_priv_mode));
 	}
@@ -170,8 +163,7 @@ void return_from_exception(struct hart *hart, privilege_level serving_priv_mode)
 			(hart->csr_store.status >> (TRAP_XSTATUS_UPIE_BIT +
 										serving_priv_mode)) &
 			0x1;
-		assign_xlen_bit(&hart->csr_store.status, serving_priv_mode,
-						pie);
+		UPDATE_BIT(hart->csr_store.status, serving_priv_mode, pie);
 		CLEAR_BIT(hart->csr_store.status,
 				  (TRAP_XSTATUS_UPIE_BIT + serving_priv_mode));
 	}

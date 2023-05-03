@@ -40,23 +40,9 @@
 #define SET_BIT(_out_var, _nbit) ((_out_var) |= (1 << (_nbit)))
 #define CLEAR_BIT(_out_var, _nbit) ((_out_var) &= ~(1 << (_nbit)))
 #define FLIP_BIT(_out_var, _nbit) ((_out_var) ^= (1 << (_nbit)))
-#define CHECK_BIT(_out_var, _nbit) ((_out_var) & (1 << (_nbit)))
+#define GET_BIT(_out_var, _nbit) (!!((_out_var) & (1 << (_nbit))))
+#define UPDATE_BIT(val, bit, bit_value) (val = (val & ~(1UL << bit)) | ((bit_value & 1) << bit))
 #define FIND_FIRST_BIT_SET(_var) (__builtin_ffsl(_var))
-
-static inline void assign_u8_bit(u8 *out_var, u8 nbit, u8 bit_value)
-{
-	*out_var = (*out_var & ~(1UL << nbit)) | ((bit_value & 1) << nbit);
-}
-
-static inline void assign_u32_bit(u32 *out_var, u32 nbit, u32 bit_value)
-{
-	*out_var = (*out_var & ~(1UL << nbit)) | ((bit_value & 1) << nbit);
-}
-
-static inline void assign_xlen_bit(uxlen *out_var, uxlen nbit, uxlen bit_value)
-{
-	*out_var = (*out_var & ~(1UL << nbit)) | ((bit_value & 1) << nbit);
-}
 
 static inline void
 assign_xlen_value_within_reg(uxlen *out_var,

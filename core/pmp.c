@@ -31,7 +31,7 @@ int pmp_write_csr_cfg(__unused u16 address, struct csr_mapping *map, uxlen val)
 		/*
 		 * check if it is locked, this can only be cleared by a reset
 		 */
-		if (!CHECK_BIT(pmpcfg[i], PMP_CFG_L_BIT))
+		if (!GET_BIT(pmpcfg[i], PMP_CFG_L_BIT))
 			pmpcfg[i] = new_pmpcfg[i];
 	}
 
@@ -54,7 +54,7 @@ int pmp_write_csr_addr(u16 address, struct csr_mapping *map, uxlen val)
 		u8 *next_cfg_ptr = &cfg_ptr[pmpaddr_i + 1];
 		enum pmp_addr_matching addr_mode_next_entry =
 			extract8(*next_cfg_ptr, PMP_CFG_A_BIT_OFFS, 2);
-		if ((addr_mode_next_entry == pmp_a_tor) && CHECK_BIT(*next_cfg_ptr, PMP_CFG_L_BIT))
+		if ((addr_mode_next_entry == pmp_a_tor) && GET_BIT(*next_cfg_ptr, PMP_CFG_L_BIT))
 		{
 			return 0;
 		}
@@ -64,7 +64,7 @@ int pmp_write_csr_addr(u16 address, struct csr_mapping *map, uxlen val)
 	 * updating the reg is only permitted if it is not locked do nothing
 	 * and return with OK if it is locked
 	 */
-	if (CHECK_BIT(cfg_ptr[pmpaddr_i], PMP_CFG_L_BIT))
+	if (GET_BIT(cfg_ptr[pmpaddr_i], PMP_CFG_L_BIT))
 		return 0;
 
 	*map->value = val;
@@ -122,7 +122,7 @@ int pmp_mem_check(struct hart *hart, privilege_level curr_priv, uxlen addr,
 			 * We only have to check the locked regions in machine
 			 * mode
 			 */
-			if ((curr_priv == machine_mode) && !CHECK_BIT(cfg_ptr[j], PMP_CFG_L_BIT))
+			if ((curr_priv == machine_mode) && !GET_BIT(cfg_ptr[j], PMP_CFG_L_BIT))
 				continue;
 
 			addr_count = (i * sizeof(uxlen)) + j;

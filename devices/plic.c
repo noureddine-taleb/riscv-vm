@@ -103,7 +103,7 @@ void plic_set_pending_interrupt(struct plic *plic, u32 interrupt_id, u8 pending)
 	u32 irq_reg = interrupt_id / 32;
 	u32 irq_bit = interrupt_id % 32;
 	// todo: change this to something better
-	assign_u32_bit(&plic->pending_bits[irq_reg], irq_bit, pending);
+	UPDATE_BIT(plic->pending_bits[irq_reg], irq_bit, pending);
 }
 
 u8 plic_check_interrupts(struct plic *plic)
@@ -123,19 +123,18 @@ u8 plic_check_interrupts(struct plic *plic)
 
 		for (j = 0; j < sizeof(plic->enable_bits[0]) * 8; j++)
 		{
-			if (CHECK_BIT(plic->enable_bits[i], j) &&
-				CHECK_BIT(plic->pending_bits[i], j) &&
+			if (GET_BIT(plic->enable_bits[i], j) &&
+				GET_BIT(plic->pending_bits[i], j) &&
 				(plic->priority[irq_id_count] >=
 				 plic->priority_threshold))
 			{
-				if (CHECK_BIT(plic->claimed_bits[i], j))
+				if (GET_BIT(plic->claimed_bits[i], j))
 				{
 					/*
 					 * qemu also seems to clear pending bit
 					 * if it was already claimed
 					 */
-					assign_u32_bit(&plic->pending_bits[i],
-								   j, 0);
+					UPDATE_BIT(plic->pending_bits[i], j, 0);
 				}
 				else if ((plic->priority[irq_id_count] >
 						  highest_prio))
@@ -193,8 +192,7 @@ int plic_bus_access(struct plic *plic, privilege_level priv_level,
 				PLIC_DBG("CLAIM WRITE! %lx\n", val);
 				irq_reg = tmp_val / 32;
 				irq_bit = tmp_val % 32;
-				assign_u32_bit(&plic->claimed_bits[irq_reg],
-							   irq_bit, 0);
+				UPDATE_BIT(plic->claimed_bits[irq_reg], irq_bit, 0);
 			}
 			/*
 			 * be sure that all updated values are sane
@@ -213,10 +211,8 @@ int plic_bus_access(struct plic *plic, privilege_level priv_level,
 				PLIC_DBG("CLAIM READ! %lx\n", *out_val);
 				irq_reg = tmp_val / 32;
 				irq_bit = tmp_val % 32;
-				if (CHECK_BIT(plic->pending_bits[irq_reg], irq_bit))
-					assign_u32_bit(&plic->claimed_bits
-										[irq_reg],
-								   irq_bit, 1);
+				if (GET_BIT(plic->pending_bits[irq_reg], irq_bit))
+					UPDATE_BIT(plic->claimed_bits[irq_reg], irq_bit, 1);
 			}
 		}
 	}
