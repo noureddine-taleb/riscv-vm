@@ -5,7 +5,6 @@ FDT := ./dts/rv64_dt.dtb
 KERNEL := kernel/fw_payload.bin
 
 SRCS := \
-	helpers/fifo.c  \
 	helpers/file.c  \
 	core/hart.c  \
 	core/csr.c  \
