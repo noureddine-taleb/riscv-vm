@@ -5,7 +5,7 @@
 #include <hart.h>
 #include <riscv_helper.h>
 
-void hart_set_pending_bits(struct hart *hart, u8 ext_int, u8 tim_int, u8 sw_int)
+void hart_update_ip(struct hart *hart, u8 ext_int, u8 tim_int, u8 sw_int)
 {
 	/*
 	 * IRQ coming from the clint are only assigned to machine mode bits,
@@ -24,24 +24,20 @@ void hart_set_pending_bits(struct hart *hart, u8 ext_int, u8 tim_int, u8 sw_int)
 	/*
 	 * Get seip, if it is possibly set to 1 by SW 
 	 */
-	if (CHECK_BIT(hart->csr_store.ie, trap_cause_machine_exti))
-		assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_exti,
-				ext_int);
+	assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_exti,
+			ext_int);
 
 	/*
 	 * Special seip handling 
 	 */
-	if (CHECK_BIT(hart->csr_store.ie, trap_cause_super_exti))
-		assign_xlen_bit(&hart->csr_store.ip, trap_cause_super_exti,
-				ext_int);
+	assign_xlen_bit(&hart->csr_store.ip, trap_cause_super_exti,
+			ext_int);
 
-	if (CHECK_BIT(hart->csr_store.ie, trap_cause_machine_ti))
-		assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_ti,
-				tim_int);
+	assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_ti,
+			tim_int);
 
-	if (CHECK_BIT(hart->csr_store.ie, trap_cause_machine_swi))
-		assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_swi,
-				sw_int);
+	assign_xlen_bit(&hart->csr_store.ip, trap_cause_machine_swi,
+			sw_int);
 }
 
 int
@@ -54,8 +50,7 @@ interrupt_check_pending(struct hart *hart,
 	privilege_level delegation_level = 0;
 	*serving_priv_level = machine_mode;
 
-	if (!((hart->csr_store.status >> curr_priv_mode) & 1))	// xIE =
-		// disabled
+	if (!((hart->csr_store.status >> curr_priv_mode) & 1))	// xIE = disabled
 		return 0;
 
 	if (!(hart->csr_store.ip & interrupt_bit & hart->csr_store.ie))
@@ -187,7 +182,7 @@ void prepare_sync_trap(struct hart *hart, uxlen cause, uxlen tval)
 	}
 }
 
-u8 hart_prepare_interrupts(struct hart *hart)
+u8 hart_handle_pending_interrupts(struct hart *hart)
 {
 	privilege_level serving_priv_level = machine_mode;
 
@@ -228,8 +223,3 @@ u8 hart_prepare_interrupts(struct hart *hart)
 	return 0;
 }
 
-void hart_process_interrupts(struct hart *hart, u8 mei, u8 mti, u8 msi)
-{
-	hart_set_pending_bits(hart, mei, mti, msi);
-	hart_prepare_interrupts(hart);
-}

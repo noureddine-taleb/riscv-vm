@@ -18,6 +18,6 @@ struct clint {
 int clint_bus_access(struct clint *priv, privilege_level priv_level,
 		     bus_access_type access_type, uxlen address,
 		     void *value, u8 len);
-void clint_update(struct clint *clint, u8 *msi, u8 *mti);
+void clint_check_interrupts(struct clint *clint, u8 *msi, u8 *mti);
 
 #endif /* RISCV_CLINT_H */

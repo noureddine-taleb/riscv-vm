@@ -163,25 +163,13 @@ void soc_run(struct soc *soc)
 	while (1) {
 		hart_run(&soc->hart0);
 
-		/*
-		 * update peripherals 
-		 */
-		uart_irq_pending = uart_update(&soc->uart8250);
+		uart_irq_pending = uart_check_interrupts(&soc->ns16550);
+		plic_set_pending_interrupt(&soc->plic, 10, uart_irq_pending);
 
-		/*
-		 * update interrupt controllers 
-		 */
-		plic_update_pending(&soc->plic, 10, uart_irq_pending);
-		mei = plic_update(&soc->plic);
+		mei = plic_check_interrupts(&soc->plic);
+		clint_check_interrupts(&soc->clint, &msi, &mti);
 
-		/*
-		 * Feed clint and update internall states 
-		 */
-		clint_update(&soc->clint, &msi, &mti);
-
-		/*
-		 * update CSRs for actual interrupt processing 
-		 */
-		hart_process_interrupts(&soc->hart0, mei, mti, msi);
+		hart_update_ip(&soc->hart0, mei, mti, msi);
+		hart_handle_pending_interrupts(&soc->hart0);
 	}
 }

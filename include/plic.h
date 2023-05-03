@@ -47,8 +47,8 @@ struct plic {
 
 };
 
-void plic_update_pending(struct plic *plic, u32 interrupt_id, u8 pending);
-u8 plic_update(struct plic *plic);
+void plic_set_pending_interrupt(struct plic *plic, u32 interrupt_id, u8 pending);
+u8 plic_check_interrupts(struct plic *plic);
 int plic_bus_access(struct plic *plic, privilege_level priv_level,
 		    bus_access_type access_type, uxlen address,
 		    void *value, u8 len);

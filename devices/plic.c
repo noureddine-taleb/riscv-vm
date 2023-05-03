@@ -88,7 +88,7 @@ static void plic_check_sanity(struct plic *plic)
 	plic->priority_threshold = plic->priority_threshold & 0x7;
 }
 
-void plic_update_pending(struct plic *plic, u32 interrupt_id, u8 pending)
+void plic_set_pending_interrupt(struct plic *plic, u32 interrupt_id, u8 pending)
 {
 	u32 irq_reg = interrupt_id / 32;
 	u32 irq_bit = interrupt_id % 32;
@@ -96,7 +96,7 @@ void plic_update_pending(struct plic *plic, u32 interrupt_id, u8 pending)
 	assign_u32_bit(&plic->pending_bits[irq_reg], irq_bit, pending);
 }
 
-u8 plic_update(struct plic *plic)
+u8 plic_check_interrupts(struct plic *plic)
 {
 	u32 i, j = 0;
 	u32 irq_id_count = 0;

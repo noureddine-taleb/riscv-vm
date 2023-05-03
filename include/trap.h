@@ -71,7 +71,7 @@ enum interrupt_type {
 	trap_type_exti,
 };
 
-void hart_set_pending_bits(struct hart *hart, u8 ext_int, u8 tim_int,
+void hart_update_ip(struct hart *hart, u8 ext_int, u8 tim_int,
 			   u8 sw_int);
 int interrupt_check_pending(struct hart *hart, privilege_level curr_priv_mode,
 			    enum interrupt_cause irq,

@@ -70,7 +70,7 @@ clint_bus_access(struct clint *clint, privilege_level priv_level,
 	return 0;
 }
 
-void clint_update(struct clint *clint, u8 *msi, u8 *mti)
+void clint_check_interrupts(struct clint *clint, u8 *msi, u8 *mti)
 {
 	static int i = 1;
 	// todo: remove clint_mtime
