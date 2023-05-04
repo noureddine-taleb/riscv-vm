@@ -6,19 +6,6 @@
 #include <types.h>
 #include <riscv_helper.h>
 
-#ifdef MMU_DEBUG_ENABLE
-#define MMU_DEBUG(...)       \
-	do                       \
-	{                        \
-		printf(__VA_ARGS__); \
-	} while (0)
-#else
-#define MMU_DEBUG(...) \
-	do                 \
-	{                  \
-	} while (0)
-#endif
-
 /*
  * PTE Flags are arranged as follows, the XWR (bus_access_type) bits are
  * shifted by on in contrast to the PMP, so we simply shift by 1 so we can
@@ -80,7 +67,6 @@ int mmu_virt_to_phys(struct hart *hart,
 	 * 1. Let a be satp.ppn × PAGESIZE, and let i = LEVELS − 1. (For Sv32, PAGESIZE=2^12 and LEVELS=2.)
 	 */
 	a = (hart->csr_store.satp & 0x3FFFFF) * SV39_PAGE_SIZE;
-	MMU_DEBUG("satp: %x\n", hart->csr_store.satp);
 
 	for (i = (SV39_LEVELS - 1), j = 0; i >= 0; i--, j++)
 	{
@@ -89,9 +75,6 @@ int mmu_virt_to_phys(struct hart *hart,
 		 * If accessing pte violates a PMA or PMP check, raise an access exception.
 		 */
 		pte_addr = a + (vpn[i] * SV39_PTESIZE);
-		MMU_DEBUG("address a: " PRINTF_FMT " pte_addr: " PRINTF_FMT
-				  "\n",
-				  a, pte_addr);
 
 		/*
 		 * Here we should raise an exception if PMP violation occurs,
@@ -101,7 +84,6 @@ int mmu_virt_to_phys(struct hart *hart,
 		__access_protected_memory(1, hart, supervisor_mode,
 								  bus_read_access, pte_addr, &pte,
 								  sizeof(uxlen));
-		MMU_DEBUG("pte[%d] " PRINTF_FMT "\n", i, pte);
 		pte_flags = pte;
 
 		/*
@@ -109,11 +91,6 @@ int mmu_virt_to_phys(struct hart *hart,
 		 */
 		if ((!(pte_flags & MMU_PAGE_VALID)) || ((!(pte_flags & MMU_PAGE_READ)) && (pte_flags & MMU_PAGE_WRITE)) || (pte_flags & MMU_PAGE_PBMT) || (pte_flags & MMU_PAGE_N) || (pte_flags & MMU_PAGE_RESERVED))
 		{
-			MMU_DEBUG("page fault: pte.v = 0, or if pte.r = 0 and pte.w = 1 access_type: %d a: " PRINTF_FMT " virt_addr: " PRINTF_FMT " pte: " PRINTF_FMT " pte_addr: " PRINTF_FMT
-					  " flags: %x curr_priv: %d level: %d pc: " PRINTF_FMT " value: " PRINTF_FMT "\n",
-					  access_type,
-					  a, *virt_addr, pte, pte_addr, pte_flags, curr_priv,
-					  i, hart->pc, value);
 			return -1;
 		}
 
@@ -127,7 +104,6 @@ int mmu_virt_to_phys(struct hart *hart,
 		 */
 		if (pte_flags & 0xA)
 		{
-			MMU_DEBUG("Leaf pte %d\n", i);
 			break;
 		}
 
@@ -136,7 +112,6 @@ int mmu_virt_to_phys(struct hart *hart,
 
 	if (i < 0)
 	{
-		MMU_DEBUG("page fault: i < 0\n");
 		return -1;
 	}
 
@@ -161,7 +136,6 @@ int mmu_virt_to_phys(struct hart *hart,
 	 */
 	if ((curr_priv == supervisor_mode) && user_page && !sum)
 	{
-		MMU_DEBUG("page fault: supervisor access to user page!\n");
 		return -1;
 	}
 
@@ -173,7 +147,6 @@ int mmu_virt_to_phys(struct hart *hart,
 
 	if (!(ACCESS_TYPE_TO_MMU(access_type) & pte_flags))
 	{
-		MMU_DEBUG("page fault: invalid RWX flags!\n");
 		return -1;
 	}
 
@@ -204,7 +177,6 @@ int mmu_virt_to_phys(struct hart *hart,
 		{
 			if (ppn[k] != 0)
 			{
-				MMU_DEBUG("misaligned superpage!\n");
 				return -1;
 			}
 		}

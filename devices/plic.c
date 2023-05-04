@@ -5,19 +5,6 @@
 #include <riscv_helper.h>
 #include <plic.h>
 
-#ifdef PLIC_DEBUG
-#define PLIC_DBG(...)        \
-	do                       \
-	{                        \
-		printf(__VA_ARGS__); \
-	} while (0)
-#else
-#define PLIC_DBG(...) \
-	do                \
-	{                 \
-	} while (0)
-#endif
-
 #define PLIC_MAX_INTERRUPTS 255
 
 #define PLIC_PRIORITY_ADDR_OFFS 0x0
@@ -153,7 +140,6 @@ u8 plic_check_interrupts(struct plic *plic)
 
 	if (irq_to_trigger > 0)
 	{
-		PLIC_DBG("plic !!IRQ!! trigger! %d\n", irq_to_trigger);
 		plic->claim_complete = irq_to_trigger;
 		return 1;
 	}
@@ -186,7 +172,6 @@ int plic_bus_access(struct plic *plic, privilege_level priv_level,
 			 */
 			if (is_claim_complete)
 			{
-				PLIC_DBG("CLAIM WRITE! %lx\n", val);
 				irq_reg = tmp_val / 32;
 				irq_bit = tmp_val % 32;
 				UPDATE_BIT(plic->claimed_bits[irq_reg], irq_bit, 0);
@@ -205,7 +190,6 @@ int plic_bus_access(struct plic *plic, privilege_level priv_level,
 			 */
 			if (is_claim_complete)
 			{
-				PLIC_DBG("CLAIM READ! %lx\n", *out_val);
 				irq_reg = tmp_val / 32;
 				irq_bit = tmp_val % 32;
 				if (GET_BIT(plic->pending_bits[irq_reg], irq_bit))

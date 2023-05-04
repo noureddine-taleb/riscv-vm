@@ -6,20 +6,6 @@
 #include <riscv_helper.h>
 #include <soc.h>
 
-// #define UART_DEBUG
-#ifdef UART_DEBUG
-#define UART_DBG(...)        \
-	do                       \
-	{                        \
-		printf(__VA_ARGS__); \
-	} while (0)
-#else
-#define UART_DBG(...) \
-	do                \
-	{                 \
-	} while (0)
-#endif
-
 #define REG_RX_TX 0
 #define REG_IER 1
 
@@ -188,12 +174,6 @@ int uart_bus_access(struct ns16550 *uart, privilege_level priv_level,
 			uart->lcr = val_u8; // ignored except dlab bit
 			uart->dlab = GET_BIT(val_u8, 7);
 
-			UART_DBG("LCR: " PRINTF_FMT "\n", val_u8);
-
-			if (uart->dlab)
-				UART_DBG("dlab activated\n");
-			else
-				UART_DBG("dlab deactivated\n");
 			break;
 		case REG_MCR:
 			uart->mcr = val_u8; // ignored

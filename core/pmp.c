@@ -6,19 +6,6 @@
 #include <types.h>
 #include <hart.h>
 
-#ifdef PMP_DEBUG_ENABLE
-#define PMP_DEBUG(...)       \
-	do                       \
-	{                        \
-		printf(__VA_ARGS__); \
-	} while (0)
-#else
-#define PMP_DEBUG(...) \
-	do                 \
-	{                  \
-	} while (0)
-#endif
-
 int pmp_write_csr_cfg(__unused u16 address, struct csr_mapping *map, uxlen val)
 {
 	u8 *pmpcfg = (u8 *)map->value;
@@ -122,11 +109,7 @@ int pmp_mem_check(struct hart *hart, privilege_level curr_priv, uxlen addr,
 				continue;
 
 			addr_count = (i * sizeof(uxlen)) + j;
-			PMP_DEBUG("pmpaddr: " PRINTF_FMT "\n",
-					  hart->csr_store.pmpaddr[addr_count]);
 			addr_mode = GET_RANGE(cfg_ptr[j], PMP_CFG_A_BIT_OFFS, 2);
-
-			PMP_DEBUG("id: %d addr_mode: %x\n", j, addr_mode);
 
 			if (!addr_mode)
 				continue;
@@ -183,12 +166,6 @@ int pmp_mem_check(struct hart *hart, privilege_level curr_priv, uxlen addr,
 
 			addr_end = addr + (len - 1);
 
-			PMP_DEBUG("addr: " PRINTF_FMT "\n", addr);
-			PMP_DEBUG("pmp_addr_start: " PRINTF_FMT "\n",
-					  pmp_addr_start);
-			PMP_DEBUG("addr_end: " PRINTF_FMT "\n", addr_end);
-			PMP_DEBUG("size: " PRINTF_FMT "\n", pmp_addr_size);
-
 			/*
 			 * Check if the access partially overlaps with
 			 * configured mem regions
@@ -239,7 +216,6 @@ int pmp_mem_check(struct hart *hart, privilege_level curr_priv, uxlen addr,
 	 */
 	if (at_least_one_active)
 	{
-		PMP_DEBUG("No PMP match found!\n");
 		return -1;
 	}
 

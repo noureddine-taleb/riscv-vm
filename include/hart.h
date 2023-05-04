@@ -10,19 +10,6 @@
 
 #define NR_RVI_REGS 32
 
-#ifdef CORE_DEBUG
-#define CORE_DBG(...)        \
-	do                       \
-	{                        \
-		printf(__VA_ARGS__); \
-	} while (0)
-#else
-#define CORE_DBG(...) \
-	do                \
-	{                 \
-	} while (0)
-#endif
-
 #define ADDR_MISALIGNED(addr) (addr & 0x3)
 
 #include <mmu.h>

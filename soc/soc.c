@@ -146,8 +146,6 @@ void soc_init(struct soc *soc, char *fdt, char *kernel)
 	 * initialize ram and peripheral read write access pointers
 	 */
 	soc_init_mappings(soc);
-
-	DEBUG_PRINT("rv SOC initialized!\n");
 }
 
 void soc_run(struct soc *soc)

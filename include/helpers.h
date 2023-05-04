@@ -6,19 +6,6 @@
 
 #include <types.h>
 
-#ifdef DEBUG
-#define DEBUG_PRINT(...)     \
-	do                       \
-	{                        \
-		printf(__VA_ARGS__); \
-	} while (0)
-#else
-#define DEBUG_PRINT(...) \
-	do                   \
-	{                    \
-	} while (0)
-#endif
-
 #define die(fmt, ...)                                          \
 	{                                                          \
 		fprintf(stderr, "--------> " fmt "\n", ##__VA_ARGS__); \

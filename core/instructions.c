@@ -14,28 +14,24 @@
  */
 void NOP(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	(void)hart;
 	return;
 }
 
 void FENCE_I(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	(void)hart;
 	return;
 }
 
 void FENCE(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	(void)hart;
 	return;
 }
 
 void FENCE_VMA(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	(void)hart;
 	return;
 }
@@ -45,7 +41,6 @@ void FENCE_VMA(struct hart *hart)
  */
 void WFI(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	(void)hart;
 	usleep(10000);
 }
@@ -55,19 +50,16 @@ void WFI(struct hart *hart)
  */
 void LUI(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->x[hart->rd] = (hart->imm << 12);
 }
 
 void AUIPC(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->x[hart->rd] = (hart->pc) + (hart->imm << 12);
 }
 
 void JAL(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->x[hart->rd] = hart->pc + 4;
 
 	if (ADDR_MISALIGNED(hart->imm))
@@ -82,7 +74,6 @@ void JAL(struct hart *hart)
 
 void JALR(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen curr_pc = hart->pc + 4;
 	hart->imm = SIGNEX_BIT_11(hart->imm);
 
@@ -100,7 +91,6 @@ void JALR(struct hart *hart)
 
 void BEQ(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	if (hart->x[hart->rs1] == hart->x[hart->rs2])
 	{
 		if (ADDR_MISALIGNED(hart->imm))
@@ -117,7 +107,6 @@ void BEQ(struct hart *hart)
 
 void BNE(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	if (hart->x[hart->rs1] != hart->x[hart->rs2])
 	{
 		if (ADDR_MISALIGNED(hart->imm))
@@ -134,7 +123,6 @@ void BNE(struct hart *hart)
 
 void BLT(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_rs = hart->x[hart->rs1];
 	ixlen signed_rs2 = hart->x[hart->rs2];
 
@@ -154,7 +142,6 @@ void BLT(struct hart *hart)
 
 void BGE(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_rs = hart->x[hart->rs1];
 	ixlen signed_rs2 = hart->x[hart->rs2];
 
@@ -174,7 +161,6 @@ void BGE(struct hart *hart)
 
 void BLTU(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	if (hart->x[hart->rs1] < hart->x[hart->rs2])
 	{
 		if (ADDR_MISALIGNED(hart->imm))
@@ -191,7 +177,6 @@ void BLTU(struct hart *hart)
 
 void BGEU(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	if (hart->x[hart->rs1] >= hart->x[hart->rs2])
 	{
 		if (ADDR_MISALIGNED(hart->imm))
@@ -208,19 +193,13 @@ void BGEU(struct hart *hart)
 
 void ADDI(struct hart *hart)
 {
-	CORE_DBG("%s: %x " PRINTF_FMT "\n", __func__, hart->instruction,
-			 hart->pc);
 	ixlen signed_imm = SIGNEX_BIT_11(hart->imm);
 	ixlen signed_rs_val = hart->x[hart->rs1];
-	CORE_DBG("%s: " PRINTF_FMT " " PRINTF_FMT " " PRINTF_FMT " %x\n",
-			 __func__, hart->x[hart->rs1], signed_rs_val,
-			 signed_imm, hart->rs1);
 	hart->x[hart->rd] = (signed_imm + signed_rs_val);
 }
 
 void SLTI(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_imm = SIGNEX_BIT_11(hart->imm);
 	ixlen signed_rs_val = hart->x[hart->rs1];
 
@@ -232,7 +211,6 @@ void SLTI(struct hart *hart)
 
 void SLTIU(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen unsigned_imm = SIGNEX_BIT_11(hart->imm);
 	uxlen unsigned_rs_val = hart->x[hart->rs1];
 
@@ -244,7 +222,6 @@ void SLTIU(struct hart *hart)
 
 void XORI(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_imm = SIGNEX_BIT_11(hart->imm);
 	hart->imm = signed_imm;
 
@@ -256,28 +233,24 @@ void XORI(struct hart *hart)
 
 void ORI(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->imm = SIGNEX_BIT_11(hart->imm);
 	hart->x[hart->rd] = hart->x[hart->rs1] | hart->imm;
 }
 
 void ANDI(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->imm = SIGNEX_BIT_11(hart->imm);
 	hart->x[hart->rd] = hart->x[hart->rs1] & hart->imm;
 }
 
 void SLLI(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->x[hart->rd] =
 		(hart->x[hart->rs1] << (hart->imm & SHIFT_OP_MASK));
 }
 
 void SRAI(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen rs_val = hart->x[hart->rs1];
 
 	/*
@@ -289,35 +262,28 @@ void SRAI(struct hart *hart)
 
 void SRLI(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->x[hart->rd] =
 		(hart->x[hart->rs1] >> (hart->imm & SHIFT_OP_MASK));
 }
 
 void ADD(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
-	CORE_DBG("%s: " PRINTF_FMT " %x\n", __func__, hart->x[hart->rs1],
-			 hart->rs1);
 	hart->x[hart->rd] = hart->x[hart->rs1] + hart->x[hart->rs2];
 }
 
 void SUB(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->x[hart->rd] = hart->x[hart->rs1] - hart->x[hart->rs2];
 }
 
 void SLL(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->x[hart->rd] =
 		hart->x[hart->rs1] << (hart->x[hart->rs2] & SHIFT_OP_MASK);
 }
 
 void SLT(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_rs = hart->x[hart->rs1];
 	ixlen signed_rs2 = hart->x[hart->rs2];
 
@@ -329,7 +295,6 @@ void SLT(struct hart *hart)
 
 void SLTU(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	if (hart->rs1 == 0)
 	{
 		if (hart->x[hart->rs2])
@@ -348,39 +313,33 @@ void SLTU(struct hart *hart)
 
 void XOR(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->x[hart->rd] = hart->x[hart->rs1] ^ hart->x[hart->rs2];
 }
 
 void SRL(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->x[hart->rd] =
 		hart->x[hart->rs1] >> (hart->x[hart->rs2] & SHIFT_OP_MASK);
 }
 
 void OR(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->x[hart->rd] = hart->x[hart->rs1] | (hart->x[hart->rs2]);
 }
 
 void AND(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->x[hart->rd] = hart->x[hart->rs1] & (hart->x[hart->rs2]);
 }
 
 void SRA(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_rs = hart->x[hart->rs1];
 	hart->x[hart->rd] = signed_rs >> (hart->x[hart->rs2] & SHIFT_OP_MASK);
 }
 
 void LB(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u8 tmp_load_val = 0;
 	ixlen signed_offset = SIGNEX_BIT_11(hart->imm);
 	uxlen address = hart->x[hart->rs1] + signed_offset;
@@ -391,7 +350,6 @@ void LB(struct hart *hart)
 
 void LH(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u16 tmp_load_val = 0;
 	ixlen signed_offset = SIGNEX_BIT_11(hart->imm);
 	uxlen address = hart->x[hart->rs1] + signed_offset;
@@ -402,7 +360,6 @@ void LH(struct hart *hart)
 
 void LW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	i32 tmp_load_val = 0;
 	ixlen signed_offset = SIGNEX_BIT_11(hart->imm);
 	uxlen address = hart->x[hart->rs1] + signed_offset;
@@ -413,7 +370,6 @@ void LW(struct hart *hart)
 
 void LBU(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u8 tmp_load_val = 0;
 	ixlen signed_offset = SIGNEX_BIT_11(hart->imm);
 	uxlen address = hart->x[hart->rs1] + signed_offset;
@@ -424,7 +380,6 @@ void LBU(struct hart *hart)
 
 void LHU(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u16 tmp_load_val = 0;
 	ixlen signed_offset = SIGNEX_BIT_11(hart->imm);
 	uxlen address = hart->x[hart->rs1] + signed_offset;
@@ -435,7 +390,6 @@ void LHU(struct hart *hart)
 
 void SB(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_offset = SIGNEX_BIT_11(hart->imm);
 	uxlen address = hart->x[hart->rs1] + signed_offset;
 	u8 value_to_write = (u8)hart->x[hart->rs2];
@@ -445,7 +399,6 @@ void SB(struct hart *hart)
 
 void SH(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_offset = SIGNEX_BIT_11(hart->imm);
 	uxlen address = hart->x[hart->rs1] + signed_offset;
 	u16 value_to_write = (u16)hart->x[hart->rs2];
@@ -455,7 +408,6 @@ void SH(struct hart *hart)
 
 void SW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_offset = SIGNEX_BIT_11(hart->imm);
 	uxlen address = hart->x[hart->rs1] + signed_offset;
 	uxlen value_to_write = (uxlen)hart->x[hart->rs2];
@@ -465,7 +417,6 @@ void SW(struct hart *hart)
 
 void LWU(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u32 tmp_load_val = 0;
 	uxlen unsigned_offset = SIGNEX_BIT_11(hart->imm);
 	uxlen address = hart->x[hart->rs1] + unsigned_offset;
@@ -476,7 +427,6 @@ void LWU(struct hart *hart)
 
 void LD(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen tmp_load_val = 0;
 	ixlen signed_offset = SIGNEX_BIT_11(hart->imm);
 	ixlen address = hart->x[hart->rs1] + signed_offset;
@@ -487,7 +437,6 @@ void LD(struct hart *hart)
 
 void SD(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_offset = SIGNEX_BIT_11(hart->imm);
 	uxlen address = hart->x[hart->rs1] + signed_offset;
 	uxlen value_to_write = (uxlen)hart->x[hart->rs2];
@@ -497,14 +446,12 @@ void SD(struct hart *hart)
 
 void SRAIW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	i32 signed_rs_val = hart->x[hart->rs1];
 	hart->x[hart->rd] = (signed_rs_val >> (hart->imm & 0x1F));
 }
 
 void ADDIW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	i32 signed_imm = SIGNEX_BIT_11(hart->imm);
 	i32 signed_rs_val = hart->x[hart->rs1];
 	hart->x[hart->rd] = (signed_rs_val + signed_imm);
@@ -512,7 +459,6 @@ void ADDIW(struct hart *hart)
 
 void SLLIW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	i32 signed_tmp32 =
 		(hart->x[hart->rs1] << (hart->imm & 0x1F)) & 0xFFFFFFFF;
 	hart->x[hart->rd] = (ixlen)signed_tmp32;
@@ -520,7 +466,6 @@ void SLLIW(struct hart *hart)
 
 void SRLIW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u32 unsigned_rs_val = hart->x[hart->rs1];
 	i32 signed_tmp32 = (unsigned_rs_val >> (hart->imm & 0x1F));
 	hart->x[hart->rd] = (ixlen)signed_tmp32;
@@ -528,7 +473,6 @@ void SRLIW(struct hart *hart)
 
 void SRLW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u32 rs1_val = hart->x[hart->rs1];
 	u32 rs2_val = (hart->x[hart->rs2] & 0x1F);
 	i32 signed_tmp32 = rs1_val >> rs2_val;
@@ -537,7 +481,6 @@ void SRLW(struct hart *hart)
 
 void SRAW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	i32 rs1_val_signed = hart->x[hart->rs1];
 	u32 rs2_val = (hart->x[hart->rs2] & 0x1F);
 	i32 signed_tmp32 = rs1_val_signed >> rs2_val;
@@ -546,7 +489,6 @@ void SRAW(struct hart *hart)
 
 void SLLW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u32 rs1_val = hart->x[hart->rs1];
 	u32 rs2_val = (hart->x[hart->rs2] & 0x1F);
 	i32 signed_tmp32 = rs1_val << rs2_val;
@@ -555,7 +497,6 @@ void SLLW(struct hart *hart)
 
 void ADDW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u32 rs1_val = hart->x[hart->rs1];
 	u32 rs2_val = hart->x[hart->rs2];
 	i32 signed_tmp32 = rs1_val + rs2_val;
@@ -564,7 +505,6 @@ void ADDW(struct hart *hart)
 
 void SUBW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u32 rs1_val = hart->x[hart->rs1];
 	u32 rs2_val = hart->x[hart->rs2];
 	i32 signed_tmp32 = rs1_val - rs2_val;
@@ -573,8 +513,6 @@ void SUBW(struct hart *hart)
 
 void CSRRWx(struct hart *hart, uxlen new_val)
 {
-	CORE_DBG("%s: %x " PRINTF_FMT " priv level: %d\n", __func__,
-			 hart->instruction, hart->pc, hart->curr_priv_mode);
 	uxlen csr_val = 0;
 	u16 csr_addr = hart->imm;
 	uxlen csr_mask = csr_get_mask(hart->csr_regs, csr_addr);
@@ -605,7 +543,6 @@ void CSRRWx(struct hart *hart, uxlen new_val)
 
 void CSRRSx(struct hart *hart, uxlen new_val)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen csr_val = 0;
 	u16 csr_addr = hart->imm;
 	uxlen csr_mask = csr_get_mask(hart->csr_regs, csr_addr);
@@ -634,7 +571,6 @@ void CSRRSx(struct hart *hart, uxlen new_val)
 
 void CSRRCx(struct hart *hart, uxlen new_val)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen csr_val = 0;
 	u16 csr_addr = hart->imm;
 	uxlen csr_mask = csr_get_mask(hart->csr_regs, csr_addr);
@@ -701,25 +637,20 @@ void EBREAK(struct hart *hart)
 	 * not implemented
 	 */
 	(void)hart;
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 }
 
 void MRET(struct hart *hart)
 {
-	CORE_DBG("%s: " PRINTF_FMT "\n", __func__,
-			 hart->csr_store.ip);
 	return_from_exception(hart, hart->curr_priv_mode);
 }
 
 void SRET(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	return_from_exception(hart, hart->curr_priv_mode);
 }
 
 void URET(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	printf("URET!\n");
 	while (1)
 		;
@@ -731,7 +662,6 @@ void URET(struct hart *hart)
 
 void LR_W(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->lr_address = hart->x[hart->rs1];
 	hart->lr_valid = 1;
 	LW(hart);
@@ -739,7 +669,6 @@ void LR_W(struct hart *hart)
 
 void SC_W(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	if (hart->lr_valid && (hart->lr_address == hart->x[hart->rs1]))
 	{
 		SW(hart);
@@ -756,7 +685,6 @@ void SC_W(struct hart *hart)
 
 void AMOSWAP_W(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	u32 rs2_val = hart->x[hart->rs2];
 	u32 result = 0;
@@ -770,7 +698,6 @@ void AMOSWAP_W(struct hart *hart)
 
 void AMOADD_W(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
@@ -786,7 +713,6 @@ void AMOADD_W(struct hart *hart)
 
 void AMOXOR_W(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
@@ -802,7 +728,6 @@ void AMOXOR_W(struct hart *hart)
 
 void AMOAND_W(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
@@ -818,7 +743,6 @@ void AMOAND_W(struct hart *hart)
 
 void AMOOR_W(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
@@ -834,7 +758,6 @@ void AMOOR_W(struct hart *hart)
 
 void AMOMIN_W(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	i32 rd_val = 0;
 	i32 rs2_val = hart->x[hart->rs2];
@@ -851,7 +774,6 @@ void AMOMIN_W(struct hart *hart)
 
 void AMOMAX_W(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	i32 rd_val = 0;
 	i32 rs2_val = hart->x[hart->rs2];
@@ -868,7 +790,6 @@ void AMOMAX_W(struct hart *hart)
 
 void AMOMINU_W(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
@@ -885,7 +806,6 @@ void AMOMINU_W(struct hart *hart)
 
 void AMOMAXU_W(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	u32 rd_val = 0;
 	u32 rs2_val = hart->x[hart->rs2];
@@ -902,7 +822,6 @@ void AMOMAXU_W(struct hart *hart)
 
 void LR_D(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	hart->lr_valid = 1;
 	hart->lr_address = hart->x[hart->rs1];
 	LD(hart);
@@ -910,7 +829,6 @@ void LR_D(struct hart *hart)
 
 void SC_D(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	if (hart->lr_valid && (hart->lr_address == hart->x[hart->rs1]))
 	{
 		SD(hart);
@@ -927,7 +845,6 @@ void SC_D(struct hart *hart)
 
 void AMOSWAP_D(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	uxlen rs2_val = hart->x[hart->rs2];
 	uxlen result = 0;
@@ -941,7 +858,6 @@ void AMOSWAP_D(struct hart *hart)
 
 void AMOADD_D(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
@@ -957,7 +873,6 @@ void AMOADD_D(struct hart *hart)
 
 void AMOXOR_D(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
@@ -973,7 +888,6 @@ void AMOXOR_D(struct hart *hart)
 
 void AMOAND_D(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
@@ -989,7 +903,6 @@ void AMOAND_D(struct hart *hart)
 
 void AMOOR_D(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
@@ -1005,7 +918,6 @@ void AMOOR_D(struct hart *hart)
 
 void AMOMIN_D(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	ixlen rd_val = 0;
 	ixlen rs2_val = hart->x[hart->rs2];
@@ -1022,7 +934,6 @@ void AMOMIN_D(struct hart *hart)
 
 void AMOMAX_D(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	ixlen rd_val = 0;
 	ixlen rs2_val = hart->x[hart->rs2];
@@ -1039,7 +950,6 @@ void AMOMAX_D(struct hart *hart)
 
 void AMOMINU_D(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
@@ -1056,7 +966,6 @@ void AMOMINU_D(struct hart *hart)
 
 void AMOMAXU_D(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen address = hart->x[hart->rs1];
 	uxlen rd_val = 0;
 	uxlen rs2_val = hart->x[hart->rs2];
@@ -1073,7 +982,6 @@ void AMOMAXU_D(struct hart *hart)
 
 void DIV(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_rs = hart->x[hart->rs1];
 	ixlen signed_rs2 = hart->x[hart->rs2];
 
@@ -1100,7 +1008,6 @@ void DIV(struct hart *hart)
 
 void DIVU(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen unsigned_rs = hart->x[hart->rs1];
 	uxlen unsigned_rs2 = hart->x[hart->rs2];
 
@@ -1118,7 +1025,6 @@ void DIVU(struct hart *hart)
 
 void REM(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_rs = hart->x[hart->rs1];
 	ixlen signed_rs2 = hart->x[hart->rs2];
 
@@ -1145,7 +1051,6 @@ void REM(struct hart *hart)
 
 void REMU(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen unsigned_rs = hart->x[hart->rs1];
 	uxlen unsigned_rs2 = hart->x[hart->rs2];
 
@@ -1163,7 +1068,6 @@ void REMU(struct hart *hart)
 
 void MUL(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen signed_rs = hart->x[hart->rs1];
 	ixlen signed_rs2 = hart->x[hart->rs2];
 	hart->x[hart->rd] = signed_rs * signed_rs2;
@@ -1171,7 +1075,6 @@ void MUL(struct hart *hart)
 
 void MULH(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen result_hi = 0;
 	ixlen result_lo = 0;
 	__MUL(hart->x[hart->rs1], hart->x[hart->rs2], &result_hi, &result_lo);
@@ -1180,7 +1083,6 @@ void MULH(struct hart *hart)
 
 void MULHU(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	uxlen result_hi = 0;
 	uxlen result_lo = 0;
 	__UMUL(hart->x[hart->rs1], hart->x[hart->rs2], &result_hi, &result_lo);
@@ -1189,7 +1091,6 @@ void MULHU(struct hart *hart)
 
 void MULHSU(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	ixlen result_hi = 0;
 	ixlen result_lo = 0;
 	__MULHSU(hart->x[hart->rs1], hart->x[hart->rs2], &result_hi, &result_lo);
@@ -1198,7 +1099,6 @@ void MULHSU(struct hart *hart)
 
 void MULW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	i32 signed_rs = hart->x[hart->rs1];
 	i32 signed_rs2 = hart->x[hart->rs2];
 	hart->x[hart->rd] = (ixlen)(signed_rs * signed_rs2);
@@ -1206,7 +1106,6 @@ void MULW(struct hart *hart)
 
 void DIVW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	i32 signed_rs = hart->x[hart->rs1];
 	i32 signed_rs2 = hart->x[hart->rs2];
 	i32 result = 0;
@@ -1236,7 +1135,6 @@ void DIVW(struct hart *hart)
 
 void DIVUW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u32 unsigned_rs = hart->x[hart->rs1];
 	u32 unsigned_rs2 = hart->x[hart->rs2];
 	u32 result = 0;
@@ -1257,7 +1155,6 @@ void DIVUW(struct hart *hart)
 
 void REMW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	i32 signed_rs = hart->x[hart->rs1];
 	i32 signed_rs2 = hart->x[hart->rs2];
 	i32 result = 0;
@@ -1287,7 +1184,6 @@ void REMW(struct hart *hart)
 
 void REMUW(struct hart *hart)
 {
-	CORE_DBG("%s: %x\n", __func__, hart->instruction);
 	u32 unsigned_rs = hart->x[hart->rs1];
 	u32 unsigned_rs2 = hart->x[hart->rs2];
 	u32 result = 0;
