@@ -49,7 +49,7 @@ int pmp_write_csr_addr(u16 address, struct csr_mapping *map, uxlen val)
 	{
 		u8 *next_cfg_ptr = &cfg_ptr[pmpaddr_i + 1];
 		enum pmp_addr_matching addr_mode_next_entry =
-			extract8(*next_cfg_ptr, PMP_CFG_A_BIT_OFFS, 2);
+			GET_RANGE(*next_cfg_ptr, PMP_CFG_A_BIT_OFFS, 2);
 		if ((addr_mode_next_entry == pmp_a_tor) && GET_BIT(*next_cfg_ptr, PMP_CFG_L_BIT))
 		{
 			return 0;
@@ -124,7 +124,7 @@ int pmp_mem_check(struct hart *hart, privilege_level curr_priv, uxlen addr,
 			addr_count = (i * sizeof(uxlen)) + j;
 			PMP_DEBUG("pmpaddr: " PRINTF_FMT "\n",
 					  hart->csr_store.pmpaddr[addr_count]);
-			addr_mode = extract8(cfg_ptr[j], PMP_CFG_A_BIT_OFFS, 2);
+			addr_mode = GET_RANGE(cfg_ptr[j], PMP_CFG_A_BIT_OFFS, 2);
 
 			PMP_DEBUG("id: %d addr_mode: %x\n", j, addr_mode);
 

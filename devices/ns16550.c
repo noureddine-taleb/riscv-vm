@@ -161,8 +161,8 @@ int uart_bus_access(struct ns16550 *uart, privilege_level priv_level,
 		case REG_IER:
 			if (!uart->dlab)
 			{
-				uart->irq_enabled_rx = extract8(val_u8, 0, 1);
-				uart->irq_enabled_tx = extract8(val_u8, 1, 1);
+				uart->irq_enabled_rx = GET_BIT(val_u8, 0);
+				uart->irq_enabled_tx = GET_BIT(val_u8, 1);
 			}
 			break;
 		case REG_FCR:
@@ -186,7 +186,7 @@ int uart_bus_access(struct ns16550 *uart, privilege_level priv_level,
 			break;
 		case REG_LCR:
 			uart->lcr = val_u8; // ignored except dlab bit
-			uart->dlab = extract8(val_u8, 7, 1);
+			uart->dlab = GET_BIT(val_u8, 7);
 
 			UART_DBG("LCR: " PRINTF_FMT "\n", val_u8);
 

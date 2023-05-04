@@ -1537,10 +1537,10 @@ uxlen hart_decode(struct hart *hart)
 			hart->func3 = (hart->instruction >> 12) & 0x7;
 			hart->rs1 = (hart->instruction >> 15) & 0x1F;
 			hart->rs2 = (hart->instruction >> 20) & 0x1F;
-			hart->imm = (extract32(hart->instruction, 8, 4) << 1) |
-						(extract32(hart->instruction, 25, 6) << 5) |
-						(extract32(hart->instruction, 7, 1) << 11) |
-						(extract32(hart->instruction, 31, 1) << 12);
+			hart->imm = (GET_RANGE(hart->instruction, 8, 4) << 1) |
+						(GET_RANGE(hart->instruction, 25, 6) << 5) |
+						(GET_BIT(hart->instruction, 7) << 11) |
+						(GET_BIT(hart->instruction, 31) << 12);
 			hart->imm = SIGNEX_BIT_12(hart->imm);
 
 			if (hart->opcode == 0b1100011 && hart->func3 == 0b000)
@@ -1574,10 +1574,10 @@ uxlen hart_decode(struct hart *hart)
 		break;
 		case J:
 			hart->rd = (hart->instruction >> 7) & 0x1F;
-			hart->imm = (extract32(hart->instruction, 21, 10) << 1) |
-						(extract32(hart->instruction, 20, 1) << 11) |
-						(extract32(hart->instruction, 12, 8) << 12) |
-						(extract32(hart->instruction, 31, 1) << 20);
+			hart->imm = (GET_RANGE(hart->instruction, 21, 10) << 1) |
+						(GET_BIT(hart->instruction, 20) << 11) |
+						(GET_RANGE(hart->instruction, 12, 8) << 12) |
+						(GET_BIT(hart->instruction, 31) << 20);
 			hart->imm = SIGNEX_BIT_20(hart->imm);
 
 			if (hart->opcode == 0b1101111)
