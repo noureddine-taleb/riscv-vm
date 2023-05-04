@@ -22,7 +22,7 @@
  */
 #define ACCESS_TYPE_TO_MMU(access_type) ((1 << access_type) << 1)
 
-int mmu_write_csr(__unused u16 address, struct csr_mapping *map, uxlen val)
+int mmu_write_csr(__maybe_unused u16 address, struct csr_mapping *map, uxlen val)
 {
 	int mode = (val >> 60);
 	if (mode != 0 && mode != MMU_SATP_MODE_SV39)
@@ -214,7 +214,7 @@ privilege_level check_mpoverride(struct hart *hart, bus_access_type access_type)
 
 int vm_check(struct hart *hart, privilege_level priv_level,
 			 bus_access_type access_type, uxlen *addr,
-			 __unused void *value, __unused u8 len)
+			 __maybe_unused void *value, __maybe_unused u8 len)
 {
 	(void)priv_level;
 	privilege_level internal_priv_level =

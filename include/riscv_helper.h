@@ -11,7 +11,7 @@
 #define PRINTF_FMTU "%lu"
 #define XLEN_INT_MIN 0x8000000000000000
 
-#define SHIFT_OP_MASK 0x3F
+#define SHAMT_MASK 0x3F
 
 /*
  * Generic SIGN extension

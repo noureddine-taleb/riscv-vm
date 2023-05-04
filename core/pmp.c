@@ -6,7 +6,7 @@
 #include <types.h>
 #include <hart.h>
 
-int pmp_write_csr_cfg(__unused u16 address, struct csr_mapping *map, uxlen val)
+int pmp_write_csr_cfg(__maybe_unused u16 address, struct csr_mapping *map, uxlen val)
 {
 	u8 *pmpcfg = (u8 *)map->value;
 	u8 *new_pmpcfg = (u8 *)&val;

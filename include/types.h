@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #define __PACKED __attribute__((__packed__))
-#define __unused __attribute__((unused))
+#define __maybe_unused __attribute__((unused))
 
 typedef uint8_t u8;
 typedef uint16_t u16;

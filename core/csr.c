@@ -259,7 +259,7 @@ int csr_read_reg(struct csr_mapping *csr_regs, privilege_level curr_priv_mode,
 				 u16 address, uxlen *out_val)
 {
 #ifdef CSR_DEBUG
-	fprintf(stderr, "csr(%s) read (valid=%d, value=%x) addr=%#x, curr-priv=%d(reg priv=%d)\n",
+	fprintf(stderr, "csr(%s) read (valid=%d, value=%#lx) addr=%#x, curr-priv=%d(reg priv=%d)\n",
 			get_csr_name(address),
 			csr_regs[address].valid, *csr_regs[address].value, address, curr_priv_mode,
 			((address >> 8) & 0x3));
