@@ -53,9 +53,7 @@ int mmu_virt_to_phys(struct hart *hart,
 	 * in machine mode we don't have address translation
 	 */
 	if ((curr_priv == machine_mode) || !mode)
-	{
 		return 0;
-	}
 	// sv39
 	uxlen vpn[SV39_LEVELS] = {
 		(*virt_addr >> 12) & 0x1ff,
@@ -90,9 +88,7 @@ int mmu_virt_to_phys(struct hart *hart,
 		 * 3. If pte.v = 0, or if pte.r = 0 and pte.w = 1, stop and raise a page-fault exception.
 		 */
 		if ((!(pte_flags & MMU_PAGE_VALID)) || ((!(pte_flags & MMU_PAGE_READ)) && (pte_flags & MMU_PAGE_WRITE)) || (pte_flags & MMU_PAGE_PBMT) || (pte_flags & MMU_PAGE_N) || (pte_flags & MMU_PAGE_RESERVED))
-		{
 			return -1;
-		}
 
 		/*
 		 * 4. Otherwise, the PTE is valid. If pte.r = 1 or pte.x = 1, go to step 5. Otherwise, this PTE is a
@@ -103,17 +99,13 @@ int mmu_virt_to_phys(struct hart *hart,
 		 * check if any RWX flag is set
 		 */
 		if (pte_flags & 0xA)
-		{
 			break;
-		}
 
 		a = ((pte >> 10) & (((uxlen)1 << 44) - 1)) * SV39_PAGE_SIZE;
 	}
 
 	if (i < 0)
-	{
 		return -1;
-	}
 
 	/*
 	 * 5. A leaf PTE has been found. Determine if the requested memory access is allowed by the
@@ -135,9 +127,7 @@ int mmu_virt_to_phys(struct hart *hart,
 	 * Supervisor only has access to user pages if SUM = 1
 	 */
 	if ((curr_priv == supervisor_mode) && user_page && !sum)
-	{
 		return -1;
-	}
 
 	/*
 	 * Check if MXR
@@ -146,9 +136,7 @@ int mmu_virt_to_phys(struct hart *hart,
 		pte_flags |= MMU_PAGE_READ;
 
 	if (!(ACCESS_TYPE_TO_MMU(access_type) & pte_flags))
-	{
 		return -1;
-	}
 
 	/*
 	 * physical addresses are 64 Bit wide!!! even on RV39 systems

@@ -13,12 +13,17 @@ int pmp_write_csr_cfg(__maybe_unused u16 address, struct csr_mapping *map, uxlen
 
 	for (u8 i = 0; i < sizeof(uxlen); i++)
 	{
-		// todo if cfg=tor check the prev cfg
 		/*
 		 * check if it is locked, this can only be cleared by a reset
 		 */
-		if (!GET_BIT(pmpcfg[i], PMP_CFG_L_BIT))
-			pmpcfg[i] = new_pmpcfg[i];
+		if (GET_BIT(pmpcfg[i], PMP_CFG_L_BIT))
+			continue;
+
+		int is_last_cfg = map->value == pmpcfg[PMP_NR_CFG_REGS - 1] && i == sizeof(uxlen) - 1;
+		if (!is_last_cfg && GET_RANGE(pmpcfg[i+1], PMP_CFG_A_BIT_OFFS, 2) == pmp_a_tor && GET_BIT(pmpcfg[i+1], PMP_CFG_L_BIT))
+			continue;
+
+		pmpcfg[i] = new_pmpcfg[i];
 	}
 
 	return 0;
@@ -30,24 +35,17 @@ int pmp_write_csr_addr(u16 address, struct csr_mapping *map, uxlen val)
 	int pmpaddr_i = address - CSR_PMPADDR0;
 
 	/*
-	 * check if the next index is locked and set to tor
-	 */
-	if (pmpaddr_i < (PMP_NR_ADDR_REGS - 1))
-	{
-		u8 *next_cfg_ptr = &cfg_ptr[pmpaddr_i + 1];
-		enum pmp_addr_matching addr_mode_next_entry =
-			GET_RANGE(*next_cfg_ptr, PMP_CFG_A_BIT_OFFS, 2);
-		if ((addr_mode_next_entry == pmp_a_tor) && GET_BIT(*next_cfg_ptr, PMP_CFG_L_BIT))
-		{
-			return 0;
-		}
-	}
-
-	/*
 	 * updating the reg is only permitted if it is not locked do nothing
 	 * and return with OK if it is locked
 	 */
 	if (GET_BIT(cfg_ptr[pmpaddr_i], PMP_CFG_L_BIT))
+		return 0;
+
+	/*
+	 * check if the next index is locked and set to tor
+	 */
+	int is_last_cfg = pmpaddr_i == (PMP_NR_ADDR_REGS - 1);
+	if (!is_last_cfg && GET_RANGE(cfg_ptr[pmpaddr_i + 1], PMP_CFG_A_BIT_OFFS, 2) == pmp_a_tor && GET_BIT(cfg_ptr[pmpaddr_i + 1], PMP_CFG_L_BIT))
 		return 0;
 
 	*map->value = val;
