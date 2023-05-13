@@ -8,22 +8,33 @@
 
 int pmp_write_csr_cfg(__maybe_unused u16 address, struct csr_mapping *map, uxlen val)
 {
-	u8 *pmpcfg = (u8 *)map->value;
-	u8 *new_pmpcfg = (u8 *)&val;
+	u8 *old_pmpcfgs = (u8 *)map->value;
+	u8 *new_pmpcfgs = (u8 *)&val;
+	int pmpcfg_off = address - CSR_PMPCFG0;
 
 	for (u8 i = 0; i < sizeof(uxlen); i++)
 	{
 		/*
 		 * check if it is locked, this can only be cleared by a reset
 		 */
-		if (GET_BIT(pmpcfg[i], PMP_CFG_L_BIT))
+		if (GET_BIT(old_pmpcfgs[i], PMP_CFG_L_BIT))
 			continue;
 
-		int is_last_cfg = map->value == pmpcfg[PMP_NR_CFG_REGS - 1] && i == sizeof(uxlen) - 1;
-		if (!is_last_cfg && GET_RANGE(pmpcfg[i + 1], PMP_CFG_A_BIT_OFFS, 2) == pmp_a_tor && GET_BIT(pmpcfg[i + 1], PMP_CFG_L_BIT))
+		/*
+		 * check top of a range case
+		 */
+		int is_last_cfg = i == sizeof(uxlen) - 1 && pmpcfg_off == (PMP_NR_CFG_REGS - 1);
+
+		if (is_last_cfg)
 			continue;
 
-		pmpcfg[i] = new_pmpcfg[i];
+		if (PMP_CFG_ADDRESS_MATCHING(old_pmpcfgs[i + 1]) == pmp_a_tor && PMP_CFG_LOCKED(old_pmpcfgs[i + 1]))
+			continue;
+
+		/*
+		 * all good we safely change the cfg value now
+		*/
+		old_pmpcfgs[i] = new_pmpcfgs[i];
 	}
 
 	return 0;
@@ -31,21 +42,24 @@ int pmp_write_csr_cfg(__maybe_unused u16 address, struct csr_mapping *map, uxlen
 
 int pmp_write_csr_addr(u16 address, struct csr_mapping *map, uxlen val)
 {
-	u8 *cfg_ptr = (u8 *)map->cookie;
-	int pmpaddr_i = address - CSR_PMPADDR0;
+	u8 *pmpcfgs = (u8 *)map->cookie;
+	int pmpaddr_off = address - CSR_PMPADDR0;
 
 	/*
-	 * updating the reg is only permitted if it is not locked do nothing
-	 * and return with OK if it is locked
+	 * updating the reg is only permitted if it is not locked
 	 */
-	if (GET_BIT(cfg_ptr[pmpaddr_i], PMP_CFG_L_BIT))
+	if (GET_BIT(pmpcfgs[pmpaddr_off], PMP_CFG_L_BIT))
 		return 0;
 
 	/*
-	 * check if the next index is locked and set to tor
+	 * check tor
 	 */
-	int is_last_cfg = pmpaddr_i == (PMP_NR_ADDR_REGS - 1);
-	if (!is_last_cfg && GET_RANGE(cfg_ptr[pmpaddr_i + 1], PMP_CFG_A_BIT_OFFS, 2) == pmp_a_tor && GET_BIT(cfg_ptr[pmpaddr_i + 1], PMP_CFG_L_BIT))
+	int is_last_cfg = pmpaddr_off == (PMP_NR_ADDR_REGS - 1);
+
+	if (is_last_cfg)
+		return 0;
+
+	if (PMP_CFG_ADDRESS_MATCHING(pmpcfgs[pmpaddr_off + 1]) == pmp_a_tor && PMP_CFG_LOCKED(pmpcfgs[pmpaddr_off + 1]))
 		return 0;
 
 	*map->value = val;
@@ -107,7 +121,7 @@ int pmp_mem_check(struct hart *hart, privilege_level curr_priv, uxlen addr,
 				continue;
 
 			addr_count = (i * sizeof(uxlen)) + j;
-			addr_mode = GET_RANGE(cfg_ptr[j], PMP_CFG_A_BIT_OFFS, 2);
+			addr_mode = GET_BIT_RANGE(cfg_ptr[j], PMP_CFG_A_BIT_OFFS, 2);
 
 			if (!addr_mode)
 				continue;

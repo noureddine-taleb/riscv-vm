@@ -46,7 +46,7 @@ static uxlen hart_execute(struct hart *hart)
 
 void hart_run(struct hart *hart)
 {
-	hart->next_pc = 0;
+	hart->override_pc = 0;
 
 	if (hart_fetch(hart) == 0)
 	{
@@ -57,9 +57,8 @@ void hart_run(struct hart *hart)
 	/*
 	 * increase program counter here
 	 */
-	hart->pc = hart->next_pc ? hart->next_pc : hart->pc + 4;
+	hart->pc = hart->override_pc ? hart->override_pc : hart->pc + 4;
 
 	hart->csr_store.cycle++;
 	hart->csr_store.instret++;
-	hart->csr_store.time++;
 }

@@ -46,7 +46,7 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 	uxlen pte_addr = 0;
 	u8 pte_flags = 0;
 	u8 user_page = 0;
-	u8 mode = GET_RANGE(hart->csr_store.satp, MMU_SATP_MODE_BIT, MMU_SATP_MODE_NR_BITS);
+	u8 mode = GET_BIT_RANGE(hart->csr_store.satp, MMU_SATP_MODE_BIT, MMU_SATP_MODE_NR_BITS);
 
 	/*
 	 * in machine mode we don't have address translation
@@ -195,7 +195,7 @@ privilege_level check_mpoverride(struct hart *hart, bus_access_type access_type)
 
 	int mprv = GET_BIT(hart->csr_store.status,
 					   TRAP_XSTATUS_MPBIT);
-	privilege_level ret_val = GET_RANGE(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT, 2);
+	privilege_level ret_val = GET_BIT_RANGE(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT, 2);
 	return mprv ? ret_val : hart->curr_priv_mode;
 }
 

@@ -250,11 +250,6 @@ char *get_csr_name(u16 addr)
 	return buffer;
 }
 
-uxlen csr_get_mask(struct csr_mapping *csr_regs, u16 address)
-{
-	return csr_regs[address].mask;
-}
-
 int csr_read_reg(struct csr_mapping *csr_regs, privilege_level curr_priv_mode,
 				 u16 address, uxlen *out_val)
 {
@@ -450,9 +445,9 @@ void hart_init_csr_regs(struct hart *hart)
 	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_CYCLEH, CSR_MASK_WR_ALL,
 						 &hart->csr_store.cycle);
 	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_TIME, CSR_MASK_WR_ALL,
-						 &hart->csr_store.time);
+						 &hart->soc->clint.regs[clint_mtime]);
 	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_TIMEH, CSR_MASK_WR_ALL,
-						 &hart->csr_store.time);
+						 &hart->soc->clint.regs[clint_mtime]);
 
 	/*
 	 * All others are WARL, they start at 3

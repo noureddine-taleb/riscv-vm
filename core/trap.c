@@ -139,9 +139,9 @@ void return_from_exception(struct hart *hart, privilege_level serving_priv_mode)
 	if (serving_priv_mode == machine_mode)
 	{
 		previous_priv_level =
-			GET_RANGE(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT, 2);
+			GET_BIT_RANGE(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT, 2);
 		hart->curr_priv_mode = previous_priv_level;
-		hart->next_pc = hart->csr_store.mepc;
+		hart->override_pc = hart->csr_store.mepc;
 
 		pie =
 			(hart->csr_store.status >> (TRAP_XSTATUS_UPIE_BIT +
@@ -156,7 +156,7 @@ void return_from_exception(struct hart *hart, privilege_level serving_priv_mode)
 		previous_priv_level =
 			GET_BIT(hart->csr_store.status, TRAP_XSTATUS_SPP_BIT);
 		hart->curr_priv_mode = previous_priv_level;
-		hart->next_pc = hart->csr_store.sepc;
+		hart->override_pc = hart->csr_store.sepc;
 
 		pie =
 			(hart->csr_store.status >> (TRAP_XSTATUS_UPIE_BIT +

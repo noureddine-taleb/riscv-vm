@@ -26,7 +26,7 @@ struct hart
 	 */
 	uxlen x[NR_RVI_REGS];
 	uxlen pc;
-	uxlen next_pc;
+	uxlen override_pc;
 
 	/*
 	 * CSR
@@ -67,7 +67,6 @@ u8 hart_handle_pending_interrupts(struct hart *hart);
 
 void hart_init(struct hart *hart, struct soc *soc, u64 _start);
 void prepare_sync_trap(struct hart *hart, uxlen cause, uxlen tval);
-uxlen csr_get_mask(struct csr_mapping *csr_regs, u16 address);
 int access_protected_memory(struct hart *hart,
 							privilege_level priv_level,
 							bus_access_type access_type, uxlen addr,

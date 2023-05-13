@@ -30,6 +30,9 @@
  */
 #define PMP_CFG_R_BIT 0
 
+#define PMP_CFG_ADDRESS_MATCHING(pmpcfg) GET_BIT_RANGE(pmpcfg, PMP_CFG_A_BIT_OFFS, 2)
+#define PMP_CFG_LOCKED(pmpcfg) GET_BIT(pmpcfg, PMP_CFG_L_BIT)
+
 enum pmp_addr_matching
 {
 	pmp_a_off = 0,

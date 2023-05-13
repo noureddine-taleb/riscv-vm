@@ -56,7 +56,7 @@ void JAL(struct hart __maybe_unused *hart)
 		return;
 	}
 
-	hart->next_pc = hart->pc + hart->imm;
+	hart->override_pc = hart->pc + hart->imm;
 }
 
 // absolute jump
@@ -71,7 +71,7 @@ void JALR(struct hart __maybe_unused *hart)
 		prepare_sync_trap(hart, trap_cause_instr_addr_misalign, 0);
 		return;
 	}
-	hart->next_pc = target_pc;
+	hart->override_pc = target_pc;
 	hart->x[hart->rd] = curr_pc;
 }
 
@@ -88,7 +88,7 @@ void BEQ(struct hart __maybe_unused *hart)
 			return;
 		}
 
-		hart->next_pc = hart->pc + hart->imm;
+		hart->override_pc = hart->pc + hart->imm;
 	}
 }
 
@@ -104,7 +104,7 @@ void BNE(struct hart __maybe_unused *hart)
 			return;
 		}
 
-		hart->next_pc = hart->pc + hart->imm;
+		hart->override_pc = hart->pc + hart->imm;
 	}
 }
 
@@ -123,7 +123,7 @@ void BLT(struct hart __maybe_unused *hart)
 			return;
 		}
 
-		hart->next_pc = hart->pc + hart->imm;
+		hart->override_pc = hart->pc + hart->imm;
 	}
 }
 
@@ -142,7 +142,7 @@ void BGE(struct hart __maybe_unused *hart)
 			return;
 		}
 
-		hart->next_pc = hart->pc + hart->imm;
+		hart->override_pc = hart->pc + hart->imm;
 	}
 }
 
@@ -158,7 +158,7 @@ void BLTU(struct hart __maybe_unused *hart)
 			return;
 		}
 
-		hart->next_pc = hart->pc + hart->imm;
+		hart->override_pc = hart->pc + hart->imm;
 	}
 }
 
@@ -174,7 +174,7 @@ void BGEU(struct hart __maybe_unused *hart)
 			return;
 		}
 
-		hart->next_pc = hart->pc + hart->imm;
+		hart->override_pc = hart->pc + hart->imm;
 	}
 }
 
@@ -421,7 +421,7 @@ void CSRRWx(struct hart *hart, uxlen new_val)
 {
 	uxlen csr_val = 0;
 	u16 csr_addr = (u16)(hart->imm & 0xfff);
-	uxlen csr_mask = csr_get_mask(hart->csr_regs, csr_addr);
+	uxlen csr_mask = hart->csr_regs[csr_addr].mask;
 	uxlen not_allowed_bits = 0;
 	uxlen new_csr_val = 0;
 
@@ -451,7 +451,7 @@ void CSRRSx(struct hart *hart, uxlen new_val)
 {
 	uxlen csr_val = 0;
 	u16 csr_addr = (u16)(hart->imm & 0xfff);
-	uxlen csr_mask = csr_get_mask(hart->csr_regs, csr_addr);
+	uxlen csr_mask = hart->csr_regs[csr_addr].mask;
 	uxlen new_csr_val = 0;
 
 	if (csr_read_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr, &csr_val))
@@ -479,7 +479,7 @@ void CSRRCx(struct hart *hart, uxlen new_val)
 {
 	uxlen csr_val = 0;
 	u16 csr_addr = (u16)(hart->imm & 0xfff);
-	uxlen csr_mask = csr_get_mask(hart->csr_regs, csr_addr);
+	uxlen csr_mask = hart->csr_regs[csr_addr].mask;
 	uxlen new_csr_val = 0;
 
 	if (csr_read_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr, &csr_val))
@@ -1404,8 +1404,8 @@ uxlen hart_decode(struct hart *hart)
 		hart->func3 = (hart->instruction >> 12) & 0x7;
 		hart->rs1 = (hart->instruction >> 15) & 0x1F;
 		hart->rs2 = (hart->instruction >> 20) & 0x1F;
-		hart->imm = (GET_RANGE(hart->instruction, 8, 4) << 1) |
-					(GET_RANGE(hart->instruction, 25, 6) << 5) |
+		hart->imm = (GET_BIT_RANGE(hart->instruction, 8, 4) << 1) |
+					(GET_BIT_RANGE(hart->instruction, 25, 6) << 5) |
 					(GET_BIT(hart->instruction, 7) << 11) |
 					(GET_BIT(hart->instruction, 31) << 12);
 		hart->imm = SIGNEXTEND(hart->imm, 12);
@@ -1441,9 +1441,9 @@ uxlen hart_decode(struct hart *hart)
 		break;
 	case J:
 		hart->rd = (hart->instruction >> 7) & 0x1F;
-		hart->imm = (GET_RANGE(hart->instruction, 21, 10) << 1) |
+		hart->imm = (GET_BIT_RANGE(hart->instruction, 21, 10) << 1) |
 					(GET_BIT(hart->instruction, 20) << 11) |
-					(GET_RANGE(hart->instruction, 12, 8) << 12) |
+					(GET_BIT_RANGE(hart->instruction, 12, 8) << 12) |
 					(GET_BIT(hart->instruction, 31) << 20);
 		hart->imm = SIGNEXTEND(hart->imm, 20);
 

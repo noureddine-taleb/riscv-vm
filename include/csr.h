@@ -73,12 +73,12 @@
 #define CSR_ADDR_MCYCLE 0xB00
 #define CSR_ADDR_MINSTRET 0xB02
 #define CSR_ADDR_MCYCLEH 0xB80
-#define CSR_ADDR_MINSTRETH 0xB82
+#define CSR_ADDR_MINSTRETH 0xB82 // todo: remove this
 
 #define CSR_ADDR_CYCLE 0xC00
 #define CSR_ADDR_TIME 0xC01
 #define CSR_ADDR_CYCLEH 0xC80
-#define CSR_ADDR_TIMEH 0xC81
+#define CSR_ADDR_TIMEH 0xC81 // todo: remove
 
 #define CSR_HPMCOUNTER_WARL_MAX 32
 
@@ -147,7 +147,6 @@ struct csr_backing_store
 	uxlen hartid;
 	uxlen cycle;
 	uxlen instret;
-	uxlen time;
 
 	/*
 	 * machine regs
