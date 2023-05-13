@@ -4,8 +4,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <file.h>
-#include <riscv_helper.h>
+#include <helpers.h>
 
 size_t get_file_size(char *file)
 {

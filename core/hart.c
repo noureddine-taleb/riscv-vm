@@ -4,9 +4,7 @@
 #include <string.h>
 
 #include <types.h>
-#include <riscv_helper.h>
 #include <soc.h>
-
 #include <hart.h>
 
 void hart_init(struct hart *hart, struct soc *soc, u64 _start)

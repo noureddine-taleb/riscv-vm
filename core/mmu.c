@@ -4,7 +4,7 @@
 #include <mmu.h>
 #include <trap.h>
 #include <types.h>
-#include <riscv_helper.h>
+#include <helpers.h>
 
 /*
  * PTE Flags are arranged as follows, the XWR (bus_access_type) bits are
@@ -20,13 +20,15 @@
 /*
  * simple macro to tranlsate this to the mmu arrangement
  */
-#define ACCESS_TYPE_TO_MMU(access_type) ((1 << access_type) << 1)
+#define ACCESS_TYPE_TO_MMU(access_type) (2 << access_type)
 
 int mmu_write_csr(__maybe_unused u16 address, struct csr_mapping *map, uxlen val)
 {
-	int mode = (val >> 60);
-	if (mode != 0 && mode != MMU_SATP_MODE_SV39)
-		die("rv64 unsupported mode = %d", mode); // todo: remove
+	int mode = SATP_MODE(val);
+	if (mode != 0 && mode != MMU_SATP_MODE_SV39) {
+		debug("rv64 unsupported mode = %d", mode);
+		return 0;
+	}
 
 	*map->value = val;
 	return 0;
@@ -46,13 +48,14 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 	uxlen pte_addr = 0;
 	u8 pte_flags = 0;
 	u8 user_page = 0;
-	u8 mode = GET_BIT_RANGE(hart->csr_store.satp, MMU_SATP_MODE_BIT, MMU_SATP_MODE_NR_BITS);
+	u8 mode = SATP_MODE(hart->csr_store.satp);
 
 	/*
 	 * in machine mode we don't have address translation
 	 */
-	if ((curr_priv == machine_mode) || !mode)
+	if ((curr_priv == machine_mode) || mode == MMU_SATP_MODE_OFF)
 		return 0;
+
 	// sv39
 	uxlen vpn[SV39_LEVELS] = {
 		(*virt_addr >> 12) & 0x1ff,
@@ -63,7 +66,7 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 	/*
 	 * 1. Let a be satp.ppn × PAGESIZE, and let i = LEVELS − 1. (For Sv32, PAGESIZE=2^12 and LEVELS=2.)
 	 */
-	a = (hart->csr_store.satp & 0x3FFFFF) * SV39_PAGE_SIZE;
+	a = (hart->csr_store.satp & 0x3FFFFF) * PAGE_SIZE;
 
 	for (i = (SV39_LEVELS - 1), j = 0; i >= 0; i--, j++)
 	{
@@ -100,7 +103,7 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 		if (pte_flags & 0xA)
 			break;
 
-		a = ((pte >> 10) & (((uxlen)1 << 44) - 1)) * SV39_PAGE_SIZE;
+		a = ((pte >> 10) & (((uxlen)1 << 44) - 1)) * PAGE_SIZE;
 	}
 
 	if (i < 0)
@@ -195,7 +198,7 @@ privilege_level check_mpoverride(struct hart *hart, bus_access_type access_type)
 
 	int mprv = GET_BIT(hart->csr_store.status,
 					   TRAP_XSTATUS_MPBIT);
-	privilege_level ret_val = GET_BIT_RANGE(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT, 2);
+	privilege_level ret_val = GET_BIT_RANGE(hart->csr_store.status, TRAP_XSTATUS_MPP_BITS, 2);
 	return mprv ? ret_val : hart->curr_priv_mode;
 }
 

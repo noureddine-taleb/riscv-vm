@@ -16,14 +16,15 @@
 #define MMU_PAGE_N ((uxlen)1 << 63)
 #define MMU_PAGE_RESERVED ((uxlen)0b1111111 << 54)
 
+#define PAGE_SIZE 4096
+
 #define MMU_SATP_MODE_SV39 8
+#define MMU_SATP_MODE_OFF 0
+
 #define SV39_LEVELS 3
-#define SV39_PAGE_SIZE 4096
-#define SV39_PAGE_TABLE_ENTRIES 512
 #define SV39_PTESIZE 8
 
-#define MMU_SATP_MODE_BIT 60
-#define MMU_SATP_MODE_NR_BITS 4
+#define SATP_MODE(satp) GET_BIT_RANGE(satp, 60, 4)
 
 #include <hart.h>
 #include <types.h>

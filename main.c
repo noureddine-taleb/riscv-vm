@@ -10,8 +10,8 @@
 #include <pthread.h>
 #include <termios.h>
 
-#include <riscv_helper.h>
 #include <soc.h>
+#include <helpers.h>
 
 struct soc soc;
 

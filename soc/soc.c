@@ -4,82 +4,7 @@
 #include <string.h>
 
 #include <soc.h>
-#include <riscv_helper.h>
-
-#include <file.h>
-
-#define INIT_MEM_ACCESS_STRUCT(_ref_soc, _entry, _bus_access_func, _priv,              \
-							   _addr_start, _mem_size)                                 \
-	{                                                                                  \
-		size_t _tmp_count = _entry;                                                    \
-		if (_tmp_count >= (sizeof(_ref_soc->mappings) /                                \
-						   sizeof(_ref_soc->mappings[0])))                             \
-			die("No mem access pointer available for entry nr %d, please increase "    \
-				"mappings!\n",                                                         \
-				_entry);                                                               \
-		_ref_soc->mappings[_tmp_count].bus_access = (bus_access_func)_bus_access_func; \
-		_ref_soc->mappings[_tmp_count].priv = _priv;                                   \
-		_ref_soc->mappings[_tmp_count].addr_start = _addr_start;                       \
-		_ref_soc->mappings[_tmp_count].mem_size = _mem_size;                           \
-	}
-
-#define MiB 0x100000
-#define FDT_ALIGN (2 * MiB)
-
-static int
-memory_bus_access(u8 *mem_ptr, privilege_level __maybe_unused priv_level,
-				  bus_access_type access_type,
-				  uxlen address, void *value, u8 len)
-{
-	if (access_type == bus_write_access)
-		memcpy(&mem_ptr[address], value, len);
-	else
-		memcpy(value, &mem_ptr[address], len);
-
-	return 0;
-}
-
-static void soc_init_mappings(struct soc *soc)
-{
-	int count = 0;
-	INIT_MEM_ACCESS_STRUCT(soc, count++, memory_bus_access, soc->ram,
-						   RAM_BASE_ADDR, RAM_SIZE_BYTES);
-	INIT_MEM_ACCESS_STRUCT(soc, count++, clint_bus_access, &soc->clint,
-						   CLINT_BASE_ADDR, CLINT_SIZE_BYTES);
-	INIT_MEM_ACCESS_STRUCT(soc, count++, plic_bus_access, &soc->plic,
-						   PLIC_BASE_ADDR, PLIC_SIZE_BYTES);
-	INIT_MEM_ACCESS_STRUCT(soc, count++, uart_bus_access, &soc->ns16550,
-						   UARTNS16550_TX_REG_ADDR, UART_NS16550_NR_REGS);
-	INIT_MEM_ACCESS_STRUCT(soc, count++, memory_bus_access, soc->rom,
-						   MROM_BASE_ADDR, MROM_SIZE_BYTES);
-}
-
-int soc_bus_access(struct soc *soc, privilege_level priv_level,
-				   bus_access_type access_type, uxlen address, void *value, u8 len)
-{
-	uxlen tmp_addr = 0;
-	size_t i = 0;
-
-	for (i = 0; i < (sizeof(soc->mappings) / sizeof(soc->mappings[0])); i++)
-	{
-		if (ADDR_WITHIN_LEN(address, len, soc->mappings[i].addr_start,
-							soc->mappings[i].mem_size))
-		{
-			tmp_addr = address - soc->mappings[i].addr_start;
-			return soc->mappings[i].bus_access(soc->mappings[i].priv, priv_level,
-											   access_type,
-											   tmp_addr, value,
-											   len);
-		}
-	}
-
-	die("%s: unampped address at: %#016lx len: %d cycle: %ld  pc: %#016lx\n",
-		BUS_ACCESS_STR(access_type),
-		address,
-		len,
-		soc->hart0.csr_store.cycle,
-		soc->hart0.pc);
-}
+#include <helpers.h>
 
 void soc_init(struct soc *soc, char *fdt, char *kernel)
 {
@@ -93,13 +18,7 @@ void soc_init(struct soc *soc, char *fdt, char *kernel)
 
 	if (fdt_size + FDT_ALIGN + kernel_size > RAM_SIZE_BYTES)
 		die("memory to small for kernel + fdt");
-	/*
-	 * This is a little annoying: qemu keeps changing this stuff
-	 * from time to time and I need to do it the same, otherwise the
-	 * tests would fail as they won't match with qemu's results anymore
-	 * Be Aware: 2 * MiB was taken from qemu 5.2 but it seems
-	 * they already changed this again in later versions to 16 * MiB
-	 */
+
 	u64 fdt_addr =
 		ADDR_ALIGN_DOWN(RAM_BASE_ADDR + RAM_SIZE_BYTES - fdt_size,
 						FDT_ALIGN);
@@ -108,7 +27,7 @@ void soc_init(struct soc *soc, char *fdt, char *kernel)
 	load_file(fdt, &soc->ram[fdt_off]);
 
 	/*
-	 * this is the reset vector, taken from qemu v5.2
+	 * reset vector
 	 * abi = firmware(hartid, fdt)
 	 */
 	u32 reset_vec[] = {
@@ -130,7 +49,7 @@ void soc_init(struct soc *soc, char *fdt, char *kernel)
 	};
 
 	if (sizeof(reset_vec) > MROM_SIZE_BYTES)
-		die("rom too small for reset verctor");
+		die("rom too small for reset vector");
 	memcpy(soc->rom, reset_vec, sizeof(reset_vec));
 
 	/*

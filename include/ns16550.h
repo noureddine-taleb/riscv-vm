@@ -2,14 +2,7 @@
 #define UART_NS16550_H
 
 #include <types.h>
-
-#include <stdbool.h>
 #include <pthread.h>
-
-#define UART_NS16550_FIFO_SIZE 1
-
-#define IRQ_PENDING 0
-#define NO_IRQ_PENDING 1
 
 struct uart_buffer
 {

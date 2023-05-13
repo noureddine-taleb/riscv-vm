@@ -5,9 +5,9 @@
 #include <string.h>
 
 #include <types.h>
-#include <riscv_helper.h>
 #include <hart.h>
 #include <instruction.h>
+#include <helpers.h>
 
 /*
  * Implementations of the RISCV instructions
@@ -540,7 +540,7 @@ void ECALL(struct hart __maybe_unused *hart)
 
 void EBREAK(struct hart __maybe_unused *hart)
 {
-	// todo
+	die("EBREAK");
 }
 
 void MRET(struct hart __maybe_unused *hart)
@@ -1299,7 +1299,7 @@ uxlen hart_decode(struct hart *hart)
 		hart->func3 = (hart->instruction >> 12) & 0x7;
 		hart->rs1 = (hart->instruction >> 15) & 0x1f;
 		hart->imm = (hart->instruction >> 20) & 0xfff;
-		hart->imm = SIGNEXTEND(hart->imm, 11);
+		hart->imm = SIGN_EXTEND(hart->imm, 11);
 		// used by fence vma
 		hart->rs2 = (hart->instruction >> 20) & 0x1f;
 
@@ -1386,7 +1386,7 @@ uxlen hart_decode(struct hart *hart)
 		hart->rs2 = (hart->instruction >> 20) & 0x1F;
 		hart->imm = ((hart->instruction >> 25) << 5) |
 					((hart->instruction >> 7) & 0x1F);
-		hart->imm = SIGNEXTEND(hart->imm, 11);
+		hart->imm = SIGN_EXTEND(hart->imm, 11);
 
 		if (hart->opcode == 0b0100011 && hart->func3 == 0b000)
 			hart->execute = SB;
@@ -1408,7 +1408,7 @@ uxlen hart_decode(struct hart *hart)
 					(GET_BIT_RANGE(hart->instruction, 25, 6) << 5) |
 					(GET_BIT(hart->instruction, 7) << 11) |
 					(GET_BIT(hart->instruction, 31) << 12);
-		hart->imm = SIGNEXTEND(hart->imm, 12);
+		hart->imm = SIGN_EXTEND(hart->imm, 12);
 
 		if (hart->opcode == 0b1100011 && hart->func3 == 0b000)
 			hart->execute = BEQ;
@@ -1429,7 +1429,7 @@ uxlen hart_decode(struct hart *hart)
 	case U:
 		hart->rd = (hart->instruction >> 7) & 0x1F;
 		hart->imm = (hart->instruction >> 12) & 0xFFFFF;
-		hart->imm = SIGNEXTEND(hart->imm, 19) << 12;
+		hart->imm = SIGN_EXTEND(hart->imm, 19) << 12;
 
 		if (hart->opcode == 0b0010111)
 			hart->execute = AUIPC;
@@ -1445,7 +1445,7 @@ uxlen hart_decode(struct hart *hart)
 					(GET_BIT(hart->instruction, 20) << 11) |
 					(GET_BIT_RANGE(hart->instruction, 12, 8) << 12) |
 					(GET_BIT(hart->instruction, 31) << 20);
-		hart->imm = SIGNEXTEND(hart->imm, 20);
+		hart->imm = SIGN_EXTEND(hart->imm, 20);
 
 		if (hart->opcode == 0b1101111)
 			hart->execute = JAL;

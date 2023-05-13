@@ -28,19 +28,22 @@
 	(EXTENSION_TO_MISA('I') | EXTENSION_TO_MISA('M') | EXTENSION_TO_MISA('A') | \
 	 EXTENSION_TO_MISA('S') | EXTENSION_TO_MISA('U'))
 
+#define MiB 0x100000
+#define FDT_ALIGN (2 * MiB)
+
 struct memory_mapping
 {
 	bus_access_func bus_access;
-	void *priv;
-	uxlen addr_start;
-	uxlen mem_size;
+	void *private;
+	uxlen start;
+	uxlen len;
 };
 
 struct soc
 {
 	struct hart hart0;
-	u8 __attribute__((aligned(4))) rom[MROM_SIZE_BYTES];
-	u8 __attribute__((aligned(4))) ram[RAM_SIZE_BYTES];
+	u8 __aligned(4) rom[MROM_SIZE_BYTES];
+	u8 __aligned(4) ram[RAM_SIZE_BYTES];
 
 	struct clint clint;
 	struct plic plic;
@@ -55,4 +58,7 @@ void soc_run(struct soc *soc);
 int soc_bus_access(struct soc *soc, privilege_level priv_level,
 				   bus_access_type access_type, uxlen address, void *value,
 				   u8 len);
+void soc_init_mappings(struct soc *soc);
+size_t get_file_size(char *file);
+void load_file(char *file, u8 *memory);
 #endif /* RISCV_EXAMPLE_SOC_H */

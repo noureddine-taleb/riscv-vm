@@ -3,7 +3,7 @@
 
 #include <trap.h>
 #include <hart.h>
-#include <riscv_helper.h>
+#include <helpers.h>
 
 void hart_update_ip(struct hart *hart, u8 mei, u8 mti, u8 msi)
 {
@@ -94,8 +94,8 @@ void serve_exception(struct hart *hart,
 		hart->csr_store.mepc = curr_pc;
 
 		// set MPP
-		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT, previous_priv_mode & 1);
-		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT + 1, (previous_priv_mode >> 1) & 1);
+		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_MPP_BITS, previous_priv_mode & 1);
+		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_MPP_BITS + 1, (previous_priv_mode >> 1) & 1);
 
 		ie = (hart->csr_store.status >> serving_priv_mode) & 0x1;
 		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_UPIE_BIT + serving_priv_mode, ie);
@@ -139,7 +139,7 @@ void return_from_exception(struct hart *hart, privilege_level serving_priv_mode)
 	if (serving_priv_mode == machine_mode)
 	{
 		previous_priv_level =
-			GET_BIT_RANGE(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT, 2);
+			GET_BIT_RANGE(hart->csr_store.status, TRAP_XSTATUS_MPP_BITS, 2);
 		hart->curr_priv_mode = previous_priv_level;
 		hart->override_pc = hart->csr_store.mepc;
 

@@ -5,7 +5,6 @@ FDT := ./dts/rv64_dt.dtb
 KERNEL := kernel/fw_payload.bin
 
 SRCS := \
-	helpers/file.c  \
 	core/hart.c  \
 	core/csr.c  \
 	core/pmp.c  \
@@ -16,7 +15,10 @@ SRCS := \
 	devices/clint.c  \
 	devices/plic.c  \
 	devices/ns16550.c  \
+	soc/file.c  \
 	soc/soc.c \
+	soc/init.c \
+	soc/bus.c \
 	main.c
 
 OBJS := ${SRCS:.c=.o}

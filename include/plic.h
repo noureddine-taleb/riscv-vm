@@ -11,14 +11,6 @@
 
 struct plic
 {
-	/*
-	 * 0x0C00 0000 - 0x0C00 0400 priority reg 0 is reserved interrupt
-	 * source id[0] refers to priority 1 7 priority levels the higher the
-	 * level the higher the priority if two ids have same prio, the lower
-	 * interrupt id has a higher prio Addressing: BASE_ADDRESS +
-	 * 4*Interrupt ID Bits Field Name Description [2:0] Priority Sets the
-	 * priority for a given global interrupt. [31:3] Reserved WIRI
-	 */
 	u32 priority[NR_PRIO_MEM_REGS];
 
 	/*
@@ -34,15 +26,13 @@ struct plic
 	/*
 	 * Interrupts with a lower prio setting than threshold will be masked out
 	 * Bits Field Name Description
-	 * [2:0] Threshold Sets the priority threshold for the E31 Coreplex.
-	 * [31:3] Reserved WIRI
 	 */
 	u32 priority_threshold;
 
 	u32 claim_complete;
 
 	/*
-	 * internal
+	 * internal: used to mask claimed interrupts (gateway)
 	 */
 	u32 claimed_bits[NR_CLAIMED_BITS_REGS];
 };

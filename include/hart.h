@@ -2,19 +2,15 @@
 #define RISCV_CORE_H
 
 #include <types.h>
-
 #include <csr.h>
 #include <pmp.h>
 #include <trap.h>
 #include <clint.h>
-
-#define NR_RVI_REGS 32
-
-#define ADDR_MISALIGNED(addr) (addr & 0x3)
-
 #include <mmu.h>
 #include <pmp.h>
 #include <types.h>
+
+#define RISCV_REGS 32
 
 struct hart
 {
@@ -24,7 +20,7 @@ struct hart
 	/*
 	 * Registers
 	 */
-	uxlen x[NR_RVI_REGS];
+	uxlen x[RISCV_REGS];
 	uxlen pc;
 	uxlen override_pc;
 

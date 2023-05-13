@@ -2,8 +2,8 @@
 #include <types.h>
 #include <string.h>
 
-#include <riscv_helper.h>
 #include <plic.h>
+#include <helpers.h>
 
 #define PLIC_MAX_INTERRUPTS 255
 
@@ -40,27 +40,27 @@ static u8 *get_u8_reg_ptr(struct plic *plic, uxlen address,
 			return &ret_ptr[tmp_address];
 		}
 	}
-	else if (ADDR_WITHIN(address, PLIC_PENDING_ADDR_OFFS, PLIC_PENDING_SIZE_BYTES))
+	else if (ADDR_WITHIN_RANGE(address, PLIC_PENDING_ADDR_OFFS, PLIC_PENDING_SIZE_BYTES))
 	{
 		tmp_address = address - PLIC_PENDING_ADDR_OFFS;
 		ret_ptr = (u8 *)plic->pending_bits;
 		return &ret_ptr[tmp_address];
 	}
-	else if (ADDR_WITHIN(address, PLIC_IRQ_ENABLE_ADDR_OFFS,
+	else if (ADDR_WITHIN_RANGE(address, PLIC_IRQ_ENABLE_ADDR_OFFS,
 						 PLIC_IRQ_ENABLE_SIZE_BYTES))
 	{
 		tmp_address = address - PLIC_IRQ_ENABLE_ADDR_OFFS;
 		ret_ptr = (u8 *)plic->enable_bits;
 		return &ret_ptr[tmp_address];
 	}
-	else if (ADDR_WITHIN(address, PLIC_PRIO_THRESH_ADDR_OFFS,
+	else if (ADDR_WITHIN_RANGE(address, PLIC_PRIO_THRESH_ADDR_OFFS,
 						 PLIC_PRIO_THRESH_SIZE_BYTES))
 	{
 		tmp_address = address - PLIC_PRIO_THRESH_ADDR_OFFS;
 		ret_ptr = (u8 *)&plic->priority_threshold;
 		return &ret_ptr[tmp_address];
 	}
-	else if (ADDR_WITHIN(address, PLIC_PRIO_CLAIM_ADDR_OFFS,
+	else if (ADDR_WITHIN_RANGE(address, PLIC_PRIO_CLAIM_ADDR_OFFS,
 						 PLIC_PRIO_CLAIM_SIZE_BYTES))
 	{
 		tmp_address = address - PLIC_PRIO_CLAIM_ADDR_OFFS;
@@ -88,7 +88,7 @@ void plic_set_pending_interrupt(struct plic *plic, u32 interrupt_id, u8 pending)
 {
 	u32 irq_reg = interrupt_id / 32;
 	u32 irq_bit = interrupt_id % 32;
-	// todo: change this to something better
+
 	UPDATE_BIT(plic->pending_bits[irq_reg], irq_bit, pending);
 }
 
@@ -116,10 +116,6 @@ u8 plic_check_interrupts(struct plic *plic)
 			{
 				if (GET_BIT(plic->claimed_bits[i], j))
 				{
-					/*
-					 * qemu also seems to clear pending bit
-					 * if it was already claimed
-					 */
 					UPDATE_BIT(plic->pending_bits[i], j, 0);
 				}
 				else if ((plic->priority[irq_id_count] >

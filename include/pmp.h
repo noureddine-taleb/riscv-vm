@@ -9,28 +9,13 @@
 #define PMP_NR_ADDR_REGS 16
 #define PMP_NR_ADDR_REGS_WARL_MAX 64
 
-/*
- * Lock bit
- */
 #define PMP_CFG_L_BIT 7
-/*
- * Adress matching bit offset
- */
-#define PMP_CFG_A_BIT_OFFS 3
-/*
- * Executable bit
- */
+#define PMP_CFG_A_BITS 3
 #define PMP_CFG_X_BIT 2
-/*
- * Writable bit
- */
 #define PMP_CFG_W_BIT 1
-/*
- * Readable bit
- */
 #define PMP_CFG_R_BIT 0
 
-#define PMP_CFG_ADDRESS_MATCHING(pmpcfg) GET_BIT_RANGE(pmpcfg, PMP_CFG_A_BIT_OFFS, 2)
+#define PMP_CFG_ADDRESS_MATCHING(pmpcfg) GET_BIT_RANGE(pmpcfg, PMP_CFG_A_BITS, 2)
 #define PMP_CFG_LOCKED(pmpcfg) GET_BIT(pmpcfg, PMP_CFG_L_BIT)
 #define PMP_CFG_ACCESS(pmpcfg) (pmpcfg & 0x7)
 

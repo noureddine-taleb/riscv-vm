@@ -3,8 +3,8 @@
 
 #include <pthread.h>
 
-#include <riscv_helper.h>
 #include <soc.h>
+#include <helpers.h>
 
 #define REG_RX_TX 0
 #define REG_IER 1

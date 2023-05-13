@@ -12,6 +12,9 @@ enum instruction_type
     J,
 };
 
+/**
+ * opcode map to encoding type
+*/
 static enum instruction_type instruction_map[128] = {
     [0b0000011] = I,
     [0b0001111] = I,

@@ -2,9 +2,9 @@
 #include <string.h>
 
 #include <pmp.h>
-#include <riscv_helper.h>
 #include <types.h>
 #include <hart.h>
+#include <helpers.h>
 
 int pmp_write_csr_cfg(__maybe_unused u16 address, struct csr_mapping *map, uxlen val)
 {
@@ -146,8 +146,8 @@ int pmp_mem_check(struct hart *hart, privilege_level curr_priv, uxlen addr,
 		 * Check if the access partially overlaps with
 		 * configured mem regions
 		 */
-		bool lower_addr_match = ADDR_WITHIN(addr, pmp_addr_start, pmp_addr_size);
-		bool upper_addr_match = ADDR_WITHIN(addr + (len - 1), pmp_addr_start, pmp_addr_size);
+		bool lower_addr_match = ADDR_WITHIN_RANGE(addr, pmp_addr_start, pmp_addr_size);
+		bool upper_addr_match = ADDR_WITHIN_RANGE(addr + (len - 1), pmp_addr_start, pmp_addr_size);
 		u8 curr_access_flags = (1 << access_type);
 
 		/*
