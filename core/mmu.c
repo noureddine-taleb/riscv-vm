@@ -32,14 +32,13 @@ int mmu_write_csr(__maybe_unused u16 address, struct csr_mapping *map, uxlen val
 	return 0;
 }
 
-int mmu_virt_to_phys(struct hart *hart,
+int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 					 privilege_level curr_priv,
 					 uxlen *virt_addr, bus_access_type access_type, u8 mxr, u8 sum)
 {
 	/*
 	 * We only have these here for debug purposes
 	 */
-	(void)hart;
 
 	int i, j = 0;
 	uxlen a = 0;
@@ -200,11 +199,10 @@ privilege_level check_mpoverride(struct hart *hart, bus_access_type access_type)
 	return mprv ? ret_val : hart->curr_priv_mode;
 }
 
-int vm_check(struct hart *hart, privilege_level priv_level,
+int vm_check(struct hart *hart, privilege_level __maybe_unused priv_level,
 			 bus_access_type access_type, uxlen *addr,
 			 __maybe_unused void *value, __maybe_unused u8 len)
 {
-	(void)priv_level;
 	privilege_level internal_priv_level =
 		check_mpoverride(hart, access_type);
 	uxlen trap_cause;

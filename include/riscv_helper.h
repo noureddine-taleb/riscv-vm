@@ -7,8 +7,6 @@
 #include <types.h>
 #include <helpers.h>
 
-#define PRINTF_FMT "%016lx"
-#define PRINTF_FMTU "%lu"
 #define XLEN_INT_MIN 0x8000000000000000
 
 #define SHAMT_MASK 0x3F

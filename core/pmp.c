@@ -224,12 +224,9 @@ int pmp_mem_check(struct hart *hart, privilege_level curr_priv, uxlen addr,
 	return 0;
 }
 
-int pmp_check(struct hart *hart, privilege_level priv_level,
-			  bus_access_type access_type, uxlen *addr, void *value, u8 len)
+int pmp_check(struct hart *hart, privilege_level __maybe_unused priv_level,
+			  bus_access_type access_type, uxlen *addr, void *__maybe_unused value, u8 len)
 {
-	(void)priv_level;
-	(void)value;
-
 	uxlen trap_cause;
 	switch (access_type)
 	{

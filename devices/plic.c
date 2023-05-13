@@ -151,10 +151,9 @@ u8 plic_check_interrupts(struct plic *plic)
 	return 0;
 }
 
-int plic_bus_access(struct plic *plic, privilege_level priv_level,
+int plic_bus_access(struct plic *plic, privilege_level __maybe_unused priv_level,
 					bus_access_type access_type, uxlen address, void *value, u8 len)
 {
-	(void)priv_level;
 	u8 is_claim_complete = 0;
 	u32 irq_reg = 0;
 	u32 irq_bit = 0;

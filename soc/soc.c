@@ -27,12 +27,10 @@
 #define FDT_ALIGN (2 * MiB)
 
 static int
-memory_bus_access(u8 *mem_ptr, privilege_level priv_level,
+memory_bus_access(u8 *mem_ptr, privilege_level __maybe_unused priv_level,
 				  bus_access_type access_type,
 				  uxlen address, void *value, u8 len)
 {
-	(void)priv_level;
-
 	if (access_type == bus_write_access)
 		memcpy(&mem_ptr[address], value, len);
 	else
@@ -75,12 +73,12 @@ int soc_bus_access(struct soc *soc, privilege_level priv_level,
 		}
 	}
 
-	die("%s unampped address at!: "
-		"Addr: " PRINTF_FMT " Len: %d Cycle: %ld  PC: " PRINTF_FMT "\n",
-		access_type == bus_read_access ? "read from" : access_type == bus_write_access ? "write to"
-																					   : "execute",
-		address, len,
-		soc->hart0.csr_store.cycle, soc->hart0.pc);
+	die("%s: unampped address at: %#016lx len: %d cycle: %ld  pc: %#016lx\n",
+		BUS_ACCESS_STR(access_type),
+		address,
+		len,
+		soc->hart0.csr_store.cycle,
+		soc->hart0.pc);
 }
 
 void soc_init(struct soc *soc, char *fdt, char *kernel)

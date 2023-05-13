@@ -26,11 +26,10 @@ static ixlen get_u8_arr_index_offs(uxlen address)
 	return -1;
 }
 
-int clint_bus_access(struct clint *clint, privilege_level priv_level,
+int clint_bus_access(struct clint *clint, privilege_level __maybe_unused priv_level,
 					 bus_access_type access_type, uxlen address,
 					 void *value, u8 len)
 {
-	(void)priv_level;
 	uxlen tmp_addr = 0;
 	u8 *tmp_u8 = (u8 *)clint->regs;
 	ixlen arr_index_offs = -1;

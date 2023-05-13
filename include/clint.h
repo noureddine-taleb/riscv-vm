@@ -9,12 +9,12 @@ enum clint_regs
 	clint_mtimecmp,
 	clint_mtime,
 
-	clint_reg_max
+	clint_reg_count
 };
 
 struct clint
 {
-	u64 regs[clint_reg_max];
+	u64 regs[clint_reg_count];
 };
 
 int clint_bus_access(struct clint *priv, privilege_level priv_level,

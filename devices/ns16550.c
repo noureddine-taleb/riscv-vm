@@ -121,11 +121,10 @@ void uart_rx_reset(struct ns16550 *uart)
 	pthread_mutex_unlock(&uart->rx_buf.lock);
 }
 
-int uart_bus_access(struct ns16550 *uart, privilege_level priv_level,
+int uart_bus_access(struct ns16550 *uart, privilege_level __maybe_unused priv_level,
 					bus_access_type access_type, uxlen address, void *value,
 					u8 len)
 {
-	(void)priv_level;
 	u8 *outval = value;
 	u8 val_u8 = 0;
 
@@ -182,7 +181,7 @@ int uart_bus_access(struct ns16550 *uart, privilege_level priv_level,
 			uart->scratch = val_u8;
 			break;
 		default:
-			die("UART-Write Reg " PRINTF_FMT " not supported yet!\n", address);
+			die("uart: write: unknowen reg %#016lx\n", address);
 		}
 	}
 	else
@@ -236,7 +235,7 @@ int uart_bus_access(struct ns16550 *uart, privilege_level priv_level,
 			*outval = uart->scratch;
 			break;
 		default:
-			die("UART-Read Reg " PRINTF_FMT " not supported yet!\n", address);
+			die("uart: read: unknowen reg %#016lx\n", address);
 		}
 	}
 
