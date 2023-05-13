@@ -20,7 +20,7 @@ int pmp_write_csr_cfg(__maybe_unused u16 address, struct csr_mapping *map, uxlen
 			continue;
 
 		int is_last_cfg = map->value == pmpcfg[PMP_NR_CFG_REGS - 1] && i == sizeof(uxlen) - 1;
-		if (!is_last_cfg && GET_RANGE(pmpcfg[i+1], PMP_CFG_A_BIT_OFFS, 2) == pmp_a_tor && GET_BIT(pmpcfg[i+1], PMP_CFG_L_BIT))
+		if (!is_last_cfg && GET_RANGE(pmpcfg[i + 1], PMP_CFG_A_BIT_OFFS, 2) == pmp_a_tor && GET_BIT(pmpcfg[i + 1], PMP_CFG_L_BIT))
 			continue;
 
 		pmpcfg[i] = new_pmpcfg[i];

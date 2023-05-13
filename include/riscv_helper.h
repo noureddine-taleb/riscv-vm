@@ -11,13 +11,13 @@
 
 #define SHAMT_MASK 0x3F
 
-#define SIGNEXTEND(input, _bit)                        \
-	({                                                 \
-		struct                                         \
-		{                                              \
-			ixlen x : (_bit + 1);                      \
-		} s = {.x = input};                            \
-		s.x;                                    \
+#define SIGNEXTEND(input, _bit)   \
+	({                            \
+		struct                    \
+		{                         \
+			ixlen x : (_bit + 1); \
+		} s = {.x = input};       \
+		s.x;                      \
 	})
 
 #endif /* RISCV_HELPER_H */

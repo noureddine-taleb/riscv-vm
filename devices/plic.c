@@ -165,7 +165,7 @@ int plic_bus_access(struct plic *plic, privilege_level __maybe_unused priv_level
 		if (access_type == bus_write_access)
 		{
 			memcpy(u8_ptr, value, len);
-			tmp_val = *(u32 *) value;
+			tmp_val = *(u32 *)value;
 			/*
 			 * check if it is the claim complete reg
 			 */

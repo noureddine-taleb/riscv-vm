@@ -92,7 +92,7 @@ void serve_exception(struct hart *hart,
 	if (serving_priv_mode == machine_mode)
 	{
 		hart->csr_store.mepc = curr_pc;
-		
+
 		// set MPP
 		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT, previous_priv_mode & 1);
 		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT + 1, (previous_priv_mode >> 1) & 1);

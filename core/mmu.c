@@ -194,7 +194,7 @@ privilege_level check_mpoverride(struct hart *hart, bus_access_type access_type)
 		return hart->curr_priv_mode;
 
 	int mprv = GET_BIT(hart->csr_store.status,
-						   TRAP_XSTATUS_MPBIT);
+					   TRAP_XSTATUS_MPBIT);
 	privilege_level ret_val = GET_RANGE(hart->csr_store.status, TRAP_XSTATUS_MPP_BIT, 2);
 	return mprv ? ret_val : hart->curr_priv_mode;
 }

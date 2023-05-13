@@ -19,7 +19,9 @@ static ixlen get_u8_arr_index_offs(uxlen address)
 	else if (ADDR_WITHIN(address, CLINT_MTIMECMP_OFFS, CLINT_REG_SIZE_BYTES))
 	{
 		return (1 * CLINT_REG_SIZE_BYTES);
-	} else if (ADDR_WITHIN(address, CLINT_MTIME_OFFS, CLINT_REG_SIZE_BYTES)) {
+	}
+	else if (ADDR_WITHIN(address, CLINT_MTIME_OFFS, CLINT_REG_SIZE_BYTES))
+	{
 		return (2 * CLINT_REG_SIZE_BYTES);
 	}
 
@@ -42,7 +44,9 @@ int clint_bus_access(struct clint *clint, privilege_level __maybe_unused priv_le
 		if (access_type == bus_write_access)
 		{
 			memcpy(&tmp_u8[tmp_addr], value, len);
-		} else {
+		}
+		else
+		{
 			memcpy(value, &tmp_u8[tmp_addr], len);
 		}
 	}

@@ -1,7 +1,8 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
-enum instruction_type {
+enum instruction_type
+{
     None = 0,
     R,
     I,

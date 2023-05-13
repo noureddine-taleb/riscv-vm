@@ -13,17 +13,21 @@
  * Implementations of the RISCV instructions
  */
 void NOP(struct hart __maybe_unused *hart)
-{}
+{
+}
 
 // fence
 void FENCE_I(struct hart __maybe_unused *hart)
-{}
+{
+}
 
 void FENCE(struct hart __maybe_unused *hart)
-{}
+{
+}
 
 void FENCE_VMA(struct hart __maybe_unused *hart)
-{}
+{
+}
 
 void WFI(struct hart __maybe_unused *hart)
 {
@@ -478,18 +482,19 @@ void CSRRCx(struct hart *hart, uxlen new_val)
 	uxlen csr_mask = csr_get_mask(hart->csr_regs, csr_addr);
 	uxlen new_csr_val = 0;
 
-	if (csr_read_reg
-	    (hart->csr_regs, hart->curr_priv_mode, csr_addr, &csr_val)) {
+	if (csr_read_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr, &csr_val))
+	{
 		prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
 		return;
 	}
 
 	new_csr_val = (new_val & csr_mask); // todo: remove
 
-	if (hart->rs1 != 0) {
-		if (csr_write_reg
-		    (hart->csr_regs, hart->curr_priv_mode, csr_addr,
-		     csr_val & ~new_csr_val)) {
+	if (hart->rs1 != 0)
+	{
+		if (csr_write_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr,
+						  csr_val & ~new_csr_val))
+		{
 			prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
 			return;
 		}
@@ -556,7 +561,7 @@ void LR_W(struct hart __maybe_unused *hart)
 	i32 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, hart->x[hart->rs1],
-								&tmp, 4))
+							&tmp, 4))
 		return;
 	hart->x[hart->rd] = tmp;
 }
@@ -566,7 +571,7 @@ void SC_W(struct hart __maybe_unused *hart)
 	if (hart->lr_valid && (hart->lr_address == hart->x[hart->rs1]))
 	{
 		if (hart->access_memory(hart, hart->curr_priv_mode,
-					bus_write_access, hart->x[hart->rs1], &hart->x[hart->rs2], 4))
+								bus_write_access, hart->x[hart->rs1], &hart->x[hart->rs2], 4))
 			return;
 		hart->x[hart->rd] = 0;
 	}
@@ -586,7 +591,7 @@ void LR_D(struct hart __maybe_unused *hart)
 	i64 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, hart->x[hart->rs1],
-								&tmp, 8))
+							&tmp, 8))
 		return;
 	hart->x[hart->rd] = tmp;
 }
@@ -596,7 +601,7 @@ void SC_D(struct hart __maybe_unused *hart)
 	if (hart->lr_valid && (hart->lr_address == hart->x[hart->rs1]))
 	{
 		if (hart->access_memory(hart, hart->curr_priv_mode,
-					bus_write_access, hart->x[hart->rs1], &hart->x[hart->rs2], 8))
+								bus_write_access, hart->x[hart->rs1], &hart->x[hart->rs2], 8))
 			return;
 		hart->x[hart->rd] = 0;
 	}
@@ -617,7 +622,7 @@ void AMOSWAP_W(struct hart __maybe_unused *hart)
 	i32 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 4))
+							&tmp, 4))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -633,13 +638,13 @@ void AMOADD_W(struct hart __maybe_unused *hart)
 	i32 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 4))
+							&tmp, 4))
 		return;
 
 	hart->x[hart->rd] = tmp;
 
 	result = hart->x[hart->rd] + rs2_val;
-	
+
 	hart->access_memory(hart, hart->curr_priv_mode,
 						bus_write_access, address, &result, 4);
 }
@@ -653,7 +658,7 @@ void AMOXOR_W(struct hart __maybe_unused *hart)
 	i32 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 4))
+							&tmp, 4))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -673,7 +678,7 @@ void AMOAND_W(struct hart __maybe_unused *hart)
 	i32 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 4))
+							&tmp, 4))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -693,7 +698,7 @@ void AMOOR_W(struct hart __maybe_unused *hart)
 	i32 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 4))
+							&tmp, 4))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -713,7 +718,7 @@ void AMOMIN_W(struct hart __maybe_unused *hart)
 	i32 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 4))
+							&tmp, 4))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -733,7 +738,7 @@ void AMOMAX_W(struct hart __maybe_unused *hart)
 	i32 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 4))
+							&tmp, 4))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -753,7 +758,7 @@ void AMOMINU_W(struct hart __maybe_unused *hart)
 	i32 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 4))
+							&tmp, 4))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -773,7 +778,7 @@ void AMOMAXU_W(struct hart __maybe_unused *hart)
 	i32 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 4))
+							&tmp, 4))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -792,7 +797,7 @@ void AMOSWAP_D(struct hart __maybe_unused *hart)
 	i64 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 8))
+							&tmp, 8))
 		return;
 	hart->x[hart->rd] = tmp;
 	result = rs2_val;
@@ -810,7 +815,7 @@ void AMOADD_D(struct hart __maybe_unused *hart)
 	i64 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 8))
+							&tmp, 8))
 		return;
 	hart->x[hart->rd] = tmp;
 	rd_val = hart->x[hart->rd];
@@ -829,7 +834,7 @@ void AMOXOR_D(struct hart __maybe_unused *hart)
 	i64 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 8))
+							&tmp, 8))
 		return;
 	hart->x[hart->rd] = tmp;
 	rd_val = hart->x[hart->rd];
@@ -848,7 +853,7 @@ void AMOAND_D(struct hart __maybe_unused *hart)
 	i64 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 8))
+							&tmp, 8))
 		return;
 	hart->x[hart->rd] = tmp;
 	rd_val = hart->x[hart->rd];
@@ -867,7 +872,7 @@ void AMOOR_D(struct hart __maybe_unused *hart)
 	i64 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 8))
+							&tmp, 8))
 		return;
 	hart->x[hart->rd] = tmp;
 	rd_val = hart->x[hart->rd];
@@ -886,7 +891,7 @@ void AMOMIN_D(struct hart __maybe_unused *hart)
 	i64 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 8))
+							&tmp, 8))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -906,7 +911,7 @@ void AMOMAX_D(struct hart __maybe_unused *hart)
 	i64 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 8))
+							&tmp, 8))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -926,7 +931,7 @@ void AMOMINU_D(struct hart __maybe_unused *hart)
 	i64 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 8))
+							&tmp, 8))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -946,7 +951,7 @@ void AMOMAXU_D(struct hart __maybe_unused *hart)
 	i64 tmp;
 
 	if (hart->access_memory(hart, hart->curr_priv_mode, bus_read_access, address,
-								&tmp, 8))
+							&tmp, 8))
 		return;
 	hart->x[hart->rd] = tmp;
 
@@ -1175,282 +1180,283 @@ void REMUW(struct hart __maybe_unused *hart)
 uxlen hart_decode(struct hart *hart)
 {
 	hart->opcode = (hart->instruction & 0x7F);
-	switch(instruction_map[hart->opcode]) {
-		case R:
-			hart->rd = (hart->instruction >> 7) & 0x1f;
-			hart->func3 = (hart->instruction >> 12) & 0x7;
-			hart->rs1 = (hart->instruction >> 15) & 0x1f;
-			hart->rs2 = (hart->instruction >> 20) & 0x1f;
-			hart->func7 = (hart->instruction >> 25) & 0x7f;
+	switch (instruction_map[hart->opcode])
+	{
+	case R:
+		hart->rd = (hart->instruction >> 7) & 0x1f;
+		hart->func3 = (hart->instruction >> 12) & 0x7;
+		hart->rs1 = (hart->instruction >> 15) & 0x1f;
+		hart->rs2 = (hart->instruction >> 20) & 0x1f;
+		hart->func7 = (hart->instruction >> 25) & 0x7f;
 
-			if (hart->opcode == 0b0110011 && hart->func3 == 0b000 && hart->func7 == 0b0000000)
-				hart->execute = ADD;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b000 && hart->func7 == 0b0100000)
-				hart->execute = SUB;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b001 && hart->func7 == 0b0000000)
-				hart->execute = SLL;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b010 && hart->func7 == 0b0000000)
-				hart->execute = SLT;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b011 && hart->func7 == 0b0000000)
-				hart->execute = SLTU;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b100 && hart->func7 == 0b0000000)
-				hart->execute = XOR;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b101 && hart->func7 == 0b0000000)
-				hart->execute = SRL;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b101 && hart->func7 == 0b0100000)
-				hart->execute = SRA;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b110 && hart->func7 == 0b0000000)
-				hart->execute = OR;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b111 && hart->func7 == 0b0000000)
-				hart->execute = AND;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b000 && hart->func7 == 1)
-				hart->execute = MUL;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b001 && hart->func7 == 1)
-				hart->execute = MULH;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b010 && hart->func7 == 1)
-				hart->execute = MULHSU;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b011 && hart->func7 == 1)
-				hart->execute = MULHU;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b100 && hart->func7 == 1)
-				hart->execute = DIV;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b101 && hart->func7 == 1)
-				hart->execute = DIVU;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b110 && hart->func7 == 1)
-				hart->execute = REM;
-			else if (hart->opcode == 0b0110011 && hart->func3 == 0b111 && hart->func7 == 1)
-				hart->execute = REMU;
-			else if (hart->opcode == 0b0111011 && hart->func3 == 0b000 && hart->func7 == 1)
-				hart->execute = MULW;
-			else if (hart->opcode == 0b0111011 && hart->func3 == 0b100 && hart->func7 == 1)
-				hart->execute = DIVW;
-			else if (hart->opcode == 0b0111011 && hart->func3 == 0b101 && hart->func7 == 1)
-				hart->execute = DIVUW;
-			else if (hart->opcode == 0b0111011 && hart->func3 == 0b110 && hart->func7 == 1)
-				hart->execute = REMW;
-			else if (hart->opcode == 0b0111011 && hart->func3 == 0b111 && hart->func7 == 1)
-				hart->execute = REMUW;
-			else if (hart->opcode == 0b0111011 && hart->func3 == 0b000 && hart->func7 == 0)
-				hart->execute = ADDW;
-			else if (hart->opcode == 0b0111011 && hart->func3 == 0b000 && hart->func7 == 0b0100000)
-				hart->execute = SUBW;
-			else if (hart->opcode == 0b0111011 && hart->func3 == 0b001 && hart->func7 == 0)
-				hart->execute = SLLW;
-			else if (hart->opcode == 0b0111011 && hart->func3 == 0b101 && hart->func7 == 0)
-				hart->execute = SRLW;
-			else if (hart->opcode == 0b0111011 && hart->func3 == 0b101 && hart->func7 == 0b0100000)
-				hart->execute = SRAW;
+		if (hart->opcode == 0b0110011 && hart->func3 == 0b000 && hart->func7 == 0b0000000)
+			hart->execute = ADD;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b000 && hart->func7 == 0b0100000)
+			hart->execute = SUB;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b001 && hart->func7 == 0b0000000)
+			hart->execute = SLL;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b010 && hart->func7 == 0b0000000)
+			hart->execute = SLT;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b011 && hart->func7 == 0b0000000)
+			hart->execute = SLTU;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b100 && hart->func7 == 0b0000000)
+			hart->execute = XOR;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b101 && hart->func7 == 0b0000000)
+			hart->execute = SRL;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b101 && hart->func7 == 0b0100000)
+			hart->execute = SRA;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b110 && hart->func7 == 0b0000000)
+			hart->execute = OR;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b111 && hart->func7 == 0b0000000)
+			hart->execute = AND;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b000 && hart->func7 == 1)
+			hart->execute = MUL;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b001 && hart->func7 == 1)
+			hart->execute = MULH;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b010 && hart->func7 == 1)
+			hart->execute = MULHSU;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b011 && hart->func7 == 1)
+			hart->execute = MULHU;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b100 && hart->func7 == 1)
+			hart->execute = DIV;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b101 && hart->func7 == 1)
+			hart->execute = DIVU;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b110 && hart->func7 == 1)
+			hart->execute = REM;
+		else if (hart->opcode == 0b0110011 && hart->func3 == 0b111 && hart->func7 == 1)
+			hart->execute = REMU;
+		else if (hart->opcode == 0b0111011 && hart->func3 == 0b000 && hart->func7 == 1)
+			hart->execute = MULW;
+		else if (hart->opcode == 0b0111011 && hart->func3 == 0b100 && hart->func7 == 1)
+			hart->execute = DIVW;
+		else if (hart->opcode == 0b0111011 && hart->func3 == 0b101 && hart->func7 == 1)
+			hart->execute = DIVUW;
+		else if (hart->opcode == 0b0111011 && hart->func3 == 0b110 && hart->func7 == 1)
+			hart->execute = REMW;
+		else if (hart->opcode == 0b0111011 && hart->func3 == 0b111 && hart->func7 == 1)
+			hart->execute = REMUW;
+		else if (hart->opcode == 0b0111011 && hart->func3 == 0b000 && hart->func7 == 0)
+			hart->execute = ADDW;
+		else if (hart->opcode == 0b0111011 && hart->func3 == 0b000 && hart->func7 == 0b0100000)
+			hart->execute = SUBW;
+		else if (hart->opcode == 0b0111011 && hart->func3 == 0b001 && hart->func7 == 0)
+			hart->execute = SLLW;
+		else if (hart->opcode == 0b0111011 && hart->func3 == 0b101 && hart->func7 == 0)
+			hart->execute = SRLW;
+		else if (hart->opcode == 0b0111011 && hart->func3 == 0b101 && hart->func7 == 0b0100000)
+			hart->execute = SRAW;
 
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b00010 && hart->rs2 == 0)
-				hart->execute = LR_W;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b00011)
-				hart->execute = SC_W;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b00001)
-				hart->execute = AMOSWAP_W;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b00000)
-				hart->execute = AMOADD_W;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b00100)
-				hart->execute = AMOXOR_W;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b01100)
-				hart->execute = AMOAND_W;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b01000)
-				hart->execute = AMOOR_W;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b10000)
-				hart->execute = AMOMIN_W;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b10100)
-				hart->execute = AMOMAX_W;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b11000)
-				hart->execute = AMOMINU_W;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b11100)
-				hart->execute = AMOMAXU_W;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b00010 && hart->rs2 == 0)
-				hart->execute = LR_D;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b00011)
-				hart->execute = SC_D;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b00001)
-				hart->execute = AMOSWAP_D;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b00000)
-				hart->execute = AMOADD_D;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b00100)
-				hart->execute = AMOXOR_D;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b01100)
-				hart->execute = AMOAND_D;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b01000)
-				hart->execute = AMOOR_D;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b10000)
-				hart->execute = AMOMIN_D;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b10100)
-				hart->execute = AMOMAX_D;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b11000)
-				hart->execute = AMOMINU_D;
-			else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b11100)
-				hart->execute = AMOMAXU_D;
-			else
-				goto illegal_inst;
-
-		break;
-		case I:
-			hart->rd = (hart->instruction >> 7) & 0x1f;
-			hart->func3 = (hart->instruction >> 12) & 0x7;
-			hart->rs1 = (hart->instruction >> 15) & 0x1f;
-			hart->imm = (hart->instruction >> 20) & 0xfff;
-			hart->imm = SIGNEXTEND(hart->imm, 11);
-			// used by fence vma
-			hart->rs2 = (hart->instruction >> 20) & 0x1f;
-
-			if (hart->opcode == 0b0000011 && hart->func3 == 0b000)
-				hart->execute = LB;
-			else if (hart->opcode == 0b0000011 && hart->func3 == 0b001)
-				hart->execute = LH;
-			else if (hart->opcode == 0b0000011 && hart->func3 == 0b010)
-				hart->execute = LW;
-			else if (hart->opcode == 0b0000011 && hart->func3 == 0b011)
-				hart->execute = LD;
-			else if (hart->opcode == 0b0000011 && hart->func3 == 0b100)
-				hart->execute = LBU;
-			else if (hart->opcode == 0b0000011 && hart->func3 == 0b101)
-				hart->execute = LHU;
-			else if (hart->opcode == 0b0000011 && hart->func3 == 0b110)
-				hart->execute = LWU;
-			else if (hart->opcode == 0b0010011 && hart->func3 == 0b000)
-				hart->execute = ADDI;
-			else if (hart->opcode == 0b0010011 && hart->func3 == 0b010)
-				hart->execute = SLTI;
-			else if (hart->opcode == 0b0010011 && hart->func3 == 0b011)
-				hart->execute = SLTIU;
-			else if (hart->opcode == 0b0010011 && hart->func3 == 0b100)
-				hart->execute = XORI;
-			else if (hart->opcode == 0b0010011 && hart->func3 == 0b110)
-				hart->execute = ORI;
-			else if (hart->opcode == 0b0010011 && hart->func3 == 0b111)
-				hart->execute = ANDI;
-        	else if (hart->opcode == 0b0010011 && hart->func3 == 0b001 && ((hart->imm >> 6) & 0x3f) == 0b000000)
-				hart->execute = SLLI;
-        	else if (hart->opcode == 0b0010011 && hart->func3 == 0b101 && ((hart->imm >> 6) & 0x3f) == 0b000000)
-				hart->execute = SRLI;
-        	else if (hart->opcode == 0b0010011 && hart->func3 == 0b101 && ((hart->imm >> 6) & 0x3f) == 0b010000)
-				hart->execute = SRAI;
-			else if (hart->opcode == 0b0011011 && hart->func3 == 0b001 && ((hart->imm >> 5) & 0x7f) == 0b0000000)
-				hart->execute = SLLIW;
-			else if (hart->opcode == 0b0011011 && hart->func3 == 0b101 && ((hart->imm >> 5) & 0x7f) == 0b0000000)
-				hart->execute = SRLIW;
-			else if (hart->opcode == 0b0011011 && hart->func3 == 0b101 && ((hart->imm >> 5) & 0x7f) == 0b0100000)
-				hart->execute = SRAIW;
-			else if (hart->opcode == 0b0011011 && hart->func3 == 0b000)
-				hart->execute = ADDIW;
-			else if (hart->opcode == 0b1100111 && hart->func3 == 0b000)
-				hart->execute = JALR;
-			else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && hart->rs1 == 0 && hart->imm == 0)
-				hart->execute = ECALL;
-			else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && hart->rs1 == 0 && hart->imm == 1)
-				hart->execute = EBREAK;
-			else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && hart->rs1 == 0 && hart->imm == 0b001100000010)
-				hart->execute = MRET;
-			else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && hart->rs1 == 0 && hart->imm == 0b000100000010)
-				hart->execute = SRET;
-			else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && hart->rs1 == 0 && hart->imm == 0b000100000101)
-				hart->execute = WFI;
-
-			else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && (hart->imm >> 5) == 0b0001001) 
-				hart->execute = FENCE_VMA;
-
-			else if (hart->opcode == 0b1110011 && hart->func3 == 0b001)
-				hart->execute = CSRRW;
-			else if (hart->opcode == 0b1110011 && hart->func3 == 0b010)
-				hart->execute = CSRRS;
-			else if (hart->opcode == 0b1110011 && hart->func3 == 0b011)
-				hart->execute = CSRRC;
-			else if (hart->opcode == 0b1110011 && hart->func3 == 0b101)
-				hart->execute = CSRRWI;
-			else if (hart->opcode == 0b1110011 && hart->func3 == 0b110)
-				hart->execute = CSRRSI;
-			else if (hart->opcode == 0b1110011 && hart->func3 == 0b111)
-				hart->execute = CSRRCI;
-			else if (hart->opcode == 0b0001111 && hart->func3 == 0)
-				hart->execute = FENCE;
-			else if (hart->opcode == 0b0001111 && hart->func3 == 1)
-				hart->execute = FENCE_I;
-
-			else
-				goto illegal_inst;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b00010 && hart->rs2 == 0)
+			hart->execute = LR_W;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b00011)
+			hart->execute = SC_W;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b00001)
+			hart->execute = AMOSWAP_W;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b00000)
+			hart->execute = AMOADD_W;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b00100)
+			hart->execute = AMOXOR_W;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b01100)
+			hart->execute = AMOAND_W;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b01000)
+			hart->execute = AMOOR_W;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b10000)
+			hart->execute = AMOMIN_W;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b10100)
+			hart->execute = AMOMAX_W;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b11000)
+			hart->execute = AMOMINU_W;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b010 && hart->func7 >> 2 == 0b11100)
+			hart->execute = AMOMAXU_W;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b00010 && hart->rs2 == 0)
+			hart->execute = LR_D;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b00011)
+			hart->execute = SC_D;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b00001)
+			hart->execute = AMOSWAP_D;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b00000)
+			hart->execute = AMOADD_D;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b00100)
+			hart->execute = AMOXOR_D;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b01100)
+			hart->execute = AMOAND_D;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b01000)
+			hart->execute = AMOOR_D;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b10000)
+			hart->execute = AMOMIN_D;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b10100)
+			hart->execute = AMOMAX_D;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b11000)
+			hart->execute = AMOMINU_D;
+		else if (hart->opcode == 0b0101111 && hart->func3 == 0b011 && hart->func7 >> 2 == 0b11100)
+			hart->execute = AMOMAXU_D;
+		else
+			goto illegal_inst;
 
 		break;
-		case S:
-			hart->func3 = (hart->instruction >> 12) & 0x7;
-			hart->rs1 = (hart->instruction >> 15) & 0x1F;
-			hart->rs2 = (hart->instruction >> 20) & 0x1F;
-			hart->imm = ((hart->instruction >> 25) << 5) |
-				((hart->instruction >> 7) & 0x1F);
-			hart->imm = SIGNEXTEND(hart->imm, 11);
+	case I:
+		hart->rd = (hart->instruction >> 7) & 0x1f;
+		hart->func3 = (hart->instruction >> 12) & 0x7;
+		hart->rs1 = (hart->instruction >> 15) & 0x1f;
+		hart->imm = (hart->instruction >> 20) & 0xfff;
+		hart->imm = SIGNEXTEND(hart->imm, 11);
+		// used by fence vma
+		hart->rs2 = (hart->instruction >> 20) & 0x1f;
 
-			if (hart->opcode == 0b0100011 && hart->func3 == 0b000)
-				hart->execute = SB;
-			else if (hart->opcode == 0b0100011 && hart->func3 == 0b001)
-				hart->execute = SH;
-			else if (hart->opcode == 0b0100011 && hart->func3 == 0b011)
-				hart->execute = SD;
-			else if (hart->opcode == 0b0100011 && hart->func3 == 0b010)
-				hart->execute = SW;
-			else
-				goto illegal_inst;
+		if (hart->opcode == 0b0000011 && hart->func3 == 0b000)
+			hart->execute = LB;
+		else if (hart->opcode == 0b0000011 && hart->func3 == 0b001)
+			hart->execute = LH;
+		else if (hart->opcode == 0b0000011 && hart->func3 == 0b010)
+			hart->execute = LW;
+		else if (hart->opcode == 0b0000011 && hart->func3 == 0b011)
+			hart->execute = LD;
+		else if (hart->opcode == 0b0000011 && hart->func3 == 0b100)
+			hart->execute = LBU;
+		else if (hart->opcode == 0b0000011 && hart->func3 == 0b101)
+			hart->execute = LHU;
+		else if (hart->opcode == 0b0000011 && hart->func3 == 0b110)
+			hart->execute = LWU;
+		else if (hart->opcode == 0b0010011 && hart->func3 == 0b000)
+			hart->execute = ADDI;
+		else if (hart->opcode == 0b0010011 && hart->func3 == 0b010)
+			hart->execute = SLTI;
+		else if (hart->opcode == 0b0010011 && hart->func3 == 0b011)
+			hart->execute = SLTIU;
+		else if (hart->opcode == 0b0010011 && hart->func3 == 0b100)
+			hart->execute = XORI;
+		else if (hart->opcode == 0b0010011 && hart->func3 == 0b110)
+			hart->execute = ORI;
+		else if (hart->opcode == 0b0010011 && hart->func3 == 0b111)
+			hart->execute = ANDI;
+		else if (hart->opcode == 0b0010011 && hart->func3 == 0b001 && ((hart->imm >> 6) & 0x3f) == 0b000000)
+			hart->execute = SLLI;
+		else if (hart->opcode == 0b0010011 && hart->func3 == 0b101 && ((hart->imm >> 6) & 0x3f) == 0b000000)
+			hart->execute = SRLI;
+		else if (hart->opcode == 0b0010011 && hart->func3 == 0b101 && ((hart->imm >> 6) & 0x3f) == 0b010000)
+			hart->execute = SRAI;
+		else if (hart->opcode == 0b0011011 && hart->func3 == 0b001 && ((hart->imm >> 5) & 0x7f) == 0b0000000)
+			hart->execute = SLLIW;
+		else if (hart->opcode == 0b0011011 && hart->func3 == 0b101 && ((hart->imm >> 5) & 0x7f) == 0b0000000)
+			hart->execute = SRLIW;
+		else if (hart->opcode == 0b0011011 && hart->func3 == 0b101 && ((hart->imm >> 5) & 0x7f) == 0b0100000)
+			hart->execute = SRAIW;
+		else if (hart->opcode == 0b0011011 && hart->func3 == 0b000)
+			hart->execute = ADDIW;
+		else if (hart->opcode == 0b1100111 && hart->func3 == 0b000)
+			hart->execute = JALR;
+		else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && hart->rs1 == 0 && hart->imm == 0)
+			hart->execute = ECALL;
+		else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && hart->rs1 == 0 && hart->imm == 1)
+			hart->execute = EBREAK;
+		else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && hart->rs1 == 0 && hart->imm == 0b001100000010)
+			hart->execute = MRET;
+		else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && hart->rs1 == 0 && hart->imm == 0b000100000010)
+			hart->execute = SRET;
+		else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && hart->rs1 == 0 && hart->imm == 0b000100000101)
+			hart->execute = WFI;
+
+		else if (hart->opcode == 0b1110011 && hart->rd == 0 && hart->func3 == 0 && (hart->imm >> 5) == 0b0001001)
+			hart->execute = FENCE_VMA;
+
+		else if (hart->opcode == 0b1110011 && hart->func3 == 0b001)
+			hart->execute = CSRRW;
+		else if (hart->opcode == 0b1110011 && hart->func3 == 0b010)
+			hart->execute = CSRRS;
+		else if (hart->opcode == 0b1110011 && hart->func3 == 0b011)
+			hart->execute = CSRRC;
+		else if (hart->opcode == 0b1110011 && hart->func3 == 0b101)
+			hart->execute = CSRRWI;
+		else if (hart->opcode == 0b1110011 && hart->func3 == 0b110)
+			hart->execute = CSRRSI;
+		else if (hart->opcode == 0b1110011 && hart->func3 == 0b111)
+			hart->execute = CSRRCI;
+		else if (hart->opcode == 0b0001111 && hart->func3 == 0)
+			hart->execute = FENCE;
+		else if (hart->opcode == 0b0001111 && hart->func3 == 1)
+			hart->execute = FENCE_I;
+
+		else
+			goto illegal_inst;
 
 		break;
-		case B:
-			hart->func3 = (hart->instruction >> 12) & 0x7;
-			hart->rs1 = (hart->instruction >> 15) & 0x1F;
-			hart->rs2 = (hart->instruction >> 20) & 0x1F;
-			hart->imm = (GET_RANGE(hart->instruction, 8, 4) << 1) |
-						(GET_RANGE(hart->instruction, 25, 6) << 5) |
-						(GET_BIT(hart->instruction, 7) << 11) |
-						(GET_BIT(hart->instruction, 31) << 12);
-			hart->imm = SIGNEXTEND(hart->imm, 12);
+	case S:
+		hart->func3 = (hart->instruction >> 12) & 0x7;
+		hart->rs1 = (hart->instruction >> 15) & 0x1F;
+		hart->rs2 = (hart->instruction >> 20) & 0x1F;
+		hart->imm = ((hart->instruction >> 25) << 5) |
+					((hart->instruction >> 7) & 0x1F);
+		hart->imm = SIGNEXTEND(hart->imm, 11);
 
-			if (hart->opcode == 0b1100011 && hart->func3 == 0b000)
-				hart->execute = BEQ;
-			else if (hart->opcode == 0b1100011 && hart->func3 == 0b001)
-				hart->execute = BNE;
-			else if (hart->opcode == 0b1100011 && hart->func3 == 0b100)
-				hart->execute = BLT;
-			else if (hart->opcode == 0b1100011 && hart->func3 == 0b101)
-				hart->execute = BGE;
-			else if (hart->opcode == 0b1100011 && hart->func3 == 0b110)
-				hart->execute = BLTU;
-			else if (hart->opcode == 0b1100011 && hart->func3 == 0b111)
-				hart->execute = BGEU;
-			else
-				goto illegal_inst;
+		if (hart->opcode == 0b0100011 && hart->func3 == 0b000)
+			hart->execute = SB;
+		else if (hart->opcode == 0b0100011 && hart->func3 == 0b001)
+			hart->execute = SH;
+		else if (hart->opcode == 0b0100011 && hart->func3 == 0b011)
+			hart->execute = SD;
+		else if (hart->opcode == 0b0100011 && hart->func3 == 0b010)
+			hart->execute = SW;
+		else
+			goto illegal_inst;
 
 		break;
-		case U:
-			hart->rd = (hart->instruction >> 7) & 0x1F;
-			hart->imm = (hart->instruction >> 12) & 0xFFFFF;
-			hart->imm = SIGNEXTEND(hart->imm, 19) << 12;
+	case B:
+		hart->func3 = (hart->instruction >> 12) & 0x7;
+		hart->rs1 = (hart->instruction >> 15) & 0x1F;
+		hart->rs2 = (hart->instruction >> 20) & 0x1F;
+		hart->imm = (GET_RANGE(hart->instruction, 8, 4) << 1) |
+					(GET_RANGE(hart->instruction, 25, 6) << 5) |
+					(GET_BIT(hart->instruction, 7) << 11) |
+					(GET_BIT(hart->instruction, 31) << 12);
+		hart->imm = SIGNEXTEND(hart->imm, 12);
 
-			if (hart->opcode == 0b0010111)
-				hart->execute = AUIPC;
-			else if (hart->opcode == 0b0110111)
-				hart->execute = LUI;
-			else
-				goto illegal_inst;
+		if (hart->opcode == 0b1100011 && hart->func3 == 0b000)
+			hart->execute = BEQ;
+		else if (hart->opcode == 0b1100011 && hart->func3 == 0b001)
+			hart->execute = BNE;
+		else if (hart->opcode == 0b1100011 && hart->func3 == 0b100)
+			hart->execute = BLT;
+		else if (hart->opcode == 0b1100011 && hart->func3 == 0b101)
+			hart->execute = BGE;
+		else if (hart->opcode == 0b1100011 && hart->func3 == 0b110)
+			hart->execute = BLTU;
+		else if (hart->opcode == 0b1100011 && hart->func3 == 0b111)
+			hart->execute = BGEU;
+		else
+			goto illegal_inst;
 
 		break;
-		case J:
-			hart->rd = (hart->instruction >> 7) & 0x1F;
-			hart->imm = (GET_RANGE(hart->instruction, 21, 10) << 1) |
-						(GET_BIT(hart->instruction, 20) << 11) |
-						(GET_RANGE(hart->instruction, 12, 8) << 12) |
-						(GET_BIT(hart->instruction, 31) << 20);
-			hart->imm = SIGNEXTEND(hart->imm, 20);
+	case U:
+		hart->rd = (hart->instruction >> 7) & 0x1F;
+		hart->imm = (hart->instruction >> 12) & 0xFFFFF;
+		hart->imm = SIGNEXTEND(hart->imm, 19) << 12;
 
-			if (hart->opcode == 0b1101111)
-				hart->execute = JAL;
-			else
-				goto illegal_inst;
+		if (hart->opcode == 0b0010111)
+			hart->execute = AUIPC;
+		else if (hart->opcode == 0b0110111)
+			hart->execute = LUI;
+		else
+			goto illegal_inst;
+
+		break;
+	case J:
+		hart->rd = (hart->instruction >> 7) & 0x1F;
+		hart->imm = (GET_RANGE(hart->instruction, 21, 10) << 1) |
+					(GET_BIT(hart->instruction, 20) << 11) |
+					(GET_RANGE(hart->instruction, 12, 8) << 12) |
+					(GET_BIT(hart->instruction, 31) << 20);
+		hart->imm = SIGNEXTEND(hart->imm, 20);
+
+		if (hart->opcode == 0b1101111)
+			hart->execute = JAL;
+		else
+			goto illegal_inst;
 
 		break;
 
-		default:
-illegal_inst:
-			die("unknowen pc=%lx instruction=%#x opcode=%#x func3=%#x rd=%#x rs1=%#x imm=%#lx", hart->pc, hart->instruction, hart->opcode, hart->func3, hart->rd, hart->rs1, hart->imm);
+	default:
+	illegal_inst:
+		die("unknowen pc=%lx instruction=%#x opcode=%#x func3=%#x rd=%#x rs1=%#x imm=%#lx", hart->pc, hart->instruction, hart->opcode, hart->func3, hart->rd, hart->rs1, hart->imm);
 	}
 
 	return 0;
