@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define __PACKED __attribute__((__packed__))
 #define __maybe_unused __attribute__((unused))

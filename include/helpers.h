@@ -30,6 +30,9 @@
 #define GET_BIT(_out_var, _nbit) (!!((_out_var) & (1 << (_nbit))))
 #define GET_BIT_RANGE(_out_var, _start, _len) (((_out_var) >> _start) & ((1 << _len) - 1))
 #define UPDATE_BIT(val, bit, bit_value) ((val) = ((val) & ~(1UL << (bit))) | (((bit_value)&1) << (bit)))
-#define FIND_FIRST_BIT_SET(_var) (__builtin_ffsl(_var))
+/*
+ * Returns one plus the index of the least significant bit set of x, or if x is zero, returns zero. 
+*/
+#define FIND_FIRST_BIT_SET(x) (__builtin_ffsl(x))
 
 #endif /* HELPERS_H */
