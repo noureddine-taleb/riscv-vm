@@ -6,7 +6,7 @@
 #include <hart.h>
 #include <helpers.h>
 
-int pmp_write_csr_cfg(__maybe_unused u16 address, struct csr_mapping *map, uxlen val)
+int pmp_write_csr_cfg(__maybe_unused u16 address, struct csr_reg *map, uxlen val)
 {
 	u8 *old_pmpcfgs = (u8 *)map->value;
 	u8 *new_pmpcfgs = (u8 *)&val;
@@ -40,7 +40,7 @@ int pmp_write_csr_cfg(__maybe_unused u16 address, struct csr_mapping *map, uxlen
 	return 0;
 }
 
-int pmp_write_csr_addr(u16 address, struct csr_mapping *map, uxlen val)
+int pmp_write_csr_addr(u16 address, struct csr_reg *map, uxlen val)
 {
 	u8 *pmpcfgs = (u8 *)map->cookie;
 	int pmpaddr_off = address - CSR_PMPADDR0;

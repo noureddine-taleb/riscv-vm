@@ -178,20 +178,20 @@ struct csr_backing_store
 	uxlen pmpaddr[PMP_NR_ADDR_REGS];
 };
 
-struct csr_mapping
+struct csr_reg
 {
 	int valid;
 	uxlen *value;
 	uxlen mask;
 	unsigned long cookie;
 
-	int (*read)(u16 address, struct csr_mapping *map, uxlen *val);
-	int (*write)(u16 address, struct csr_mapping *map, uxlen val);
+	int (*read)(u16 address, struct csr_reg *map, uxlen *val);
+	int (*write)(u16 address, struct csr_reg *map, uxlen val);
 };
 
-int csr_read_reg(struct csr_mapping *csr_regs,
+int csr_read_reg(struct csr_reg *csr_regs,
 				 privilege_level curr_priv_mode, u16 address, uxlen *out_val);
-int csr_write_reg(struct csr_mapping *csr_regs,
+int csr_write_reg(struct csr_reg *csr_regs,
 				  privilege_level curr_priv_mode, u16 address, uxlen val);
 char *get_csr_name(u16 addr);
 

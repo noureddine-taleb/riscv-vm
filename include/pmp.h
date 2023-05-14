@@ -27,8 +27,8 @@ enum pmp_addr_matching
 	pmp_a_napot
 };
 
-int pmp_write_csr_cfg(u16 address, struct csr_mapping *map, uxlen val);
-int pmp_write_csr_addr(u16 address, struct csr_mapping *map, uxlen val);
+int pmp_write_csr_cfg(u16 address, struct csr_reg *map, uxlen val);
+int pmp_write_csr_addr(u16 address, struct csr_reg *map, uxlen val);
 int pmp_check(struct hart *priv, privilege_level priv_level,
 			  bus_access_type access_type, uxlen *addr, void *value, u8 len);
 

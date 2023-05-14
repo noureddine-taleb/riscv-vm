@@ -246,7 +246,7 @@ char *get_csr_name(u16 addr)
 	return buffer;
 }
 
-int csr_read_reg(struct csr_mapping *csr_regs, privilege_level curr_priv_mode,
+int csr_read_reg(struct csr_reg *csr_regs, privilege_level curr_priv_mode,
 				 u16 address, uxlen *out_val)
 {
 #ifdef CSR_TRACE
@@ -273,7 +273,7 @@ int csr_read_reg(struct csr_mapping *csr_regs, privilege_level curr_priv_mode,
 	return -1;
 }
 
-int csr_write_reg(struct csr_mapping *csr_regs, privilege_level curr_priv_mode,
+int csr_write_reg(struct csr_reg *csr_regs, privilege_level curr_priv_mode,
 				  u16 address, uxlen val)
 {
 #ifdef CSR_TRACE

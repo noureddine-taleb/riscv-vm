@@ -8,7 +8,7 @@
 
 #define ACCESS_TYPE_TO_MMU(access_type) (1 << access_type)
 
-int mmu_write_csr(__maybe_unused u16 address, struct csr_mapping *map, uxlen val)
+int mmu_write_csr(__maybe_unused u16 address, struct csr_reg *map, uxlen val)
 {
 	int mode = SATP_MODE(val);
 	if (mode != MMU_SATP_MODE_OFF && mode != MMU_SATP_MODE_SV39) {

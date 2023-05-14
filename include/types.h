@@ -49,7 +49,7 @@ typedef enum
 } bus_access_type;
 
 struct hart;
-struct csr_mapping;
+struct csr_reg;
 struct soc;
 typedef int (*bus_access_func)(struct hart *priv,
 							   privilege_level priv_level,

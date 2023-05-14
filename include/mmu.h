@@ -50,7 +50,7 @@ _Static_assert(sizeof(pte_t) == SV39_PTESIZE, "pte_t size is not correct");
 #define PTE_PPN(pte) ((u64)((pte.ppn2 << 18) | (pte.ppn1 << 9) | pte.ppn0))
 #define PTE_ACCESS_FLAGS(pte) ((pte.exec << 2) | (pte.write << 1) | pte.read)
 
-int mmu_write_csr(u16 address, struct csr_mapping *map, uxlen val);
+int mmu_write_csr(u16 address, struct csr_reg *map, uxlen val);
 int vm_check(struct hart *priv, privilege_level priv_level,
 			 bus_access_type access_type, uxlen *addr, void *value, u8 len);
 #endif /* RISCV_MMU_H */

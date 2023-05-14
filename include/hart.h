@@ -28,7 +28,7 @@ struct hart
 	 * CSR
 	 */
 	struct csr_backing_store csr_store;
-	struct csr_mapping csr_regs[CSR_ADDR_MAX];
+	struct csr_reg csr_regs[CSR_ADDR_MAX];
 
 	u32 instruction;
 	u8 opcode;
