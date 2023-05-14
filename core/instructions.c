@@ -51,7 +51,7 @@ void JAL(struct hart __maybe_unused *hart)
 
 	if (ADDR_MISALIGNED(hart->imm))
 	{
-		die("Addr misaligned!\n");
+		debug("Addr misaligned!\n");
 		prepare_sync_trap(hart, trap_cause_instr_addr_misalign, 0);
 		return;
 	}
@@ -67,7 +67,7 @@ void JALR(struct hart __maybe_unused *hart)
 	target_pc &= ~(1 << 0);
 	if (ADDR_MISALIGNED(target_pc))
 	{
-		die("Addr misaligned!\n");
+		debug("Addr misaligned!\n");
 		prepare_sync_trap(hart, trap_cause_instr_addr_misalign, 0);
 		return;
 	}
@@ -82,7 +82,7 @@ void BEQ(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			die("Addr misaligned!\n");
+			debug("Addr misaligned!\n");
 			prepare_sync_trap(hart,
 							  trap_cause_instr_addr_misalign, 0);
 			return;
@@ -98,9 +98,8 @@ void BNE(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			die("Addr misaligned!\n");
-			prepare_sync_trap(hart,
-							  trap_cause_instr_addr_misalign, 0);
+			debug("Addr misaligned!\n");
+			prepare_sync_trap(hart, trap_cause_instr_addr_misalign, 0);
 			return;
 		}
 
@@ -117,9 +116,8 @@ void BLT(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			die("Addr misaligned!\n");
-			prepare_sync_trap(hart,
-							  trap_cause_instr_addr_misalign, 0);
+			debug("Addr misaligned!\n");
+			prepare_sync_trap(hart, trap_cause_instr_addr_misalign, 0);
 			return;
 		}
 
@@ -136,7 +134,7 @@ void BGE(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			die("Addr misaligned!\n");
+			debug("Addr misaligned!\n");
 			prepare_sync_trap(hart,
 							  trap_cause_instr_addr_misalign, 0);
 			return;
@@ -152,7 +150,7 @@ void BLTU(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			die("Addr misaligned!\n");
+			debug("Addr misaligned!\n");
 			prepare_sync_trap(hart,
 							  trap_cause_instr_addr_misalign, 0);
 			return;
@@ -168,7 +166,7 @@ void BGEU(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			die("Addr misaligned!\n");
+			debug("Addr misaligned!\n");
 			prepare_sync_trap(hart,
 							  trap_cause_instr_addr_misalign, 0);
 			return;
@@ -1177,7 +1175,7 @@ void REMUW(struct hart __maybe_unused *hart)
 	hart->x[hart->rd] = result;
 }
 
-uxlen hart_decode(struct hart *hart)
+int hart_decode(struct hart *hart)
 {
 	hart->opcode = (hart->instruction & 0x7F);
 	switch (instruction_map[hart->opcode])
@@ -1456,7 +1454,8 @@ uxlen hart_decode(struct hart *hart)
 
 	default:
 	illegal_inst:
-		die("unknowen pc=%lx instruction=%#x opcode=%#x func3=%#x rd=%#x rs1=%#x imm=%#lx", hart->pc, hart->instruction, hart->opcode, hart->func3, hart->rd, hart->rs1, hart->imm);
+		prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
+		return -1;
 	}
 
 	return 0;

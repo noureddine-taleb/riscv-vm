@@ -28,7 +28,7 @@ uxlen hart_fetch(struct hart *hart)
 							   &hart->instruction, sizeof(uxlen));
 }
 
-uxlen hart_decode(struct hart *hart);
+int hart_decode(struct hart *hart);
 
 static uxlen hart_execute(struct hart *hart)
 {
@@ -46,11 +46,9 @@ void hart_run(struct hart *hart)
 {
 	hart->override_pc = 0;
 
-	if (hart_fetch(hart) == 0)
-	{
-		hart_decode(hart);
-		hart_execute(hart);
-	}
+	hart_fetch(hart) == 0 
+	&& hart_decode(hart) == 0 
+	&& hart_execute(hart);
 
 	/*
 	 * increase program counter here

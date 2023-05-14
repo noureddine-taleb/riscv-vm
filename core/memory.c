@@ -36,11 +36,10 @@ int access_protected_memory(struct hart *hart,
 }
 
 int access_supervisor_physical_memory(struct hart *hart,
-							  privilege_level priv_level,
 							  bus_access_type access_type, uxlen addr,
 							  void *value, u8 len)
 {
-	__access_protected_memory(1, hart, supervisor_mode,
-								bus_read_access, addr, value,
+	return __access_protected_memory(1, hart, supervisor_mode,
+								access_type, addr, value,
 								len);
 }

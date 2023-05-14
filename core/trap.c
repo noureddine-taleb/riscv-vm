@@ -180,6 +180,8 @@ void prepare_sync_trap(struct hart *hart, uxlen cause, uxlen tval)
 		hart->sync_trap_pending = 1;
 		hart->sync_trap_cause = cause;
 		hart->sync_trap_tval = tval;
+	} else {
+		die("double fault (trap while handling another trap)");
 	}
 }
 
@@ -198,7 +200,7 @@ u8 hart_handle_pending_interrupts(struct hart *hart)
 						hart->curr_priv_mode, 0,
 						hart->sync_trap_cause, hart->pc - 4,
 						hart->sync_trap_tval);
-		// todo: to opt
+
 		hart->sync_trap_pending = 0;
 		hart->sync_trap_cause = 0;
 		hart->sync_trap_tval = 0;

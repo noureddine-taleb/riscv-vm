@@ -47,14 +47,10 @@ void uart_init(struct ns16550 *uart)
 	memset(uart, 0, sizeof(struct ns16550));
 
 	if (pthread_mutex_init(&uart->rx_buf.lock, NULL) != 0)
-	{
 		die("uart mutex init failed\n");
-	}
 
 	if (pthread_mutex_init(&uart->tx_buf.lock, NULL) != 0)
-	{
 		die("uart mutex init failed\n");
-	}
 }
 
 void uart_put_char(struct ns16550 *uart, u8 c)
@@ -129,7 +125,7 @@ int uart_bus_access(struct ns16550 *uart, privilege_level __maybe_unused priv_le
 	u8 val_u8 = 0;
 
 	if (len != 1)
-		die("UART WRITE: Only single byte access allowed!\n");
+		die("uart write: Only single byte access allowed!\n");
 
 	if (access_type == bus_write_access)
 	{

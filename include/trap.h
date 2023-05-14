@@ -44,7 +44,7 @@ enum trap_cause
 	trap_cause_breakpoint,
 	trap_cause_load_addr_misalign,
 	trap_cause_load_access_fault,
-	trap_cause_store_amo_addr_fault,
+	trap_cause_store_amo_addr_misalign,
 	trap_cause_store_amo_access_fault,
 	trap_cause_user_ecall,
 	trap_cause_super_ecall,

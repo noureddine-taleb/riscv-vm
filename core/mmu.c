@@ -49,7 +49,7 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 	 * this is not a real pointer (guest pointer), we just made it so
 	 * to benefit from pointer arithmetics
 	 */
-	pte_t *page_table = SATP_PPN(hart->csr_store.satp) << PAGE_SHIFT;
+	pte_t *page_table = (pte_t *)(SATP_PPN(hart->csr_store.satp) << PAGE_SHIFT);
 
 	for (i = 0; i < SV39_LEVELS; i++)
 	{
@@ -60,8 +60,8 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 		 */
 		pte_t *pte_addr = &page_table[vpn[i]];
 
-		access_supervisor_physical_memory(hart, supervisor_mode,
-								  bus_read_access, pte_addr, &pte,
+		access_supervisor_physical_memory(hart,
+								  bus_read_access, (uxlen)pte_addr, &pte,
 								  SV39_PTESIZE);
 
 		/*
@@ -83,13 +83,13 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 		if (pte.dirty || pte.accessed || pte.user)
 			return -1;
 
-		page_table = PTE_PPN(pte) << PAGE_SHIFT;
+		page_table = (pte_t *)(PTE_PPN(pte) << PAGE_SHIFT);
 	}
 	/**
 	 * no leaf pte found
 	*/
 	if (i == SV39_LEVELS) {
-		debug("page fault: no leaf found!\n");
+		// debug("page fault: no leaf found!\n");
 		return -1;
 	}
 
@@ -98,7 +98,7 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 	 */
 	if (curr_priv == user_mode && !pte.user)
 	{
-		debug("page fault: user access to higher priv page!\n");
+		// debug("page fault: user access to higher priv page!\n");
 		return -1;
 	}
 
@@ -108,7 +108,7 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 	 * permit Supervisor User Memory access
 	 */
 	if (curr_priv == supervisor_mode && pte.user && (!sum || access_type == bus_exec_access)) {
-		debug("page fault: supervisor access user pages!\n");
+		// debug("page fault: supervisor access user pages!\n");
 		return -1;
 	}
 
@@ -120,7 +120,7 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 		pte.read = 1;
 
 	if (!(ACCESS_TYPE_TO_MMU(access_type) & PTE_ACCESS_FLAGS(pte))) {
-		debug("page fault: insufficiant permissions! access=%#x pte=%#x\n", ACCESS_TYPE_TO_MMU(access_type), PTE_ACCESS_FLAGS(pte));
+		// debug("page fault: insufficiant permissions! access=%#x pte=%#x\n", ACCESS_TYPE_TO_MMU(access_type), PTE_ACCESS_FLAGS(pte));
 		return -1;
 	}
 
@@ -139,7 +139,7 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 	*/
 	for (int j = i + 1; j < SV39_LEVELS; j++) {
 		if (ppn[j]) { // ppn not aligned
-			debug("page fault: non aligned physical address!\n");
+			// debug("page fault: non aligned physical address!\n");
 			return -1;
 		}
 	}
@@ -149,7 +149,7 @@ int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 	 * on write access D bit should also be set
 	*/
 	if (!pte.accessed || ((access_type == bus_write_access) && !pte.dirty)) {
-		debug("page fault: dirty or accessed bit are not set!\n");
+		// debug("page fault: dirty or accessed bit are not set!\n");
 		return -1;
 	}
 

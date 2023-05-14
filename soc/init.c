@@ -7,8 +7,7 @@
 							   _addr_start, _mem_size)                                 \
 	{                                                                                  \
 		size_t _tmp_count = _entry;                                                    \
-		if (_tmp_count >= (sizeof(_ref_soc->mappings) /                                \
-						   sizeof(_ref_soc->mappings[0])))                             \
+		if (_tmp_count >= ARRAY_SIZE(_ref_soc->mappings))                             \
 			die("No mem access pointer available for entry nr %d, please increase "    \
 				"mappings!\n",                                                         \
 				_entry);                                                               \
