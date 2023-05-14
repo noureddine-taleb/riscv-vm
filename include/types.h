@@ -7,6 +7,7 @@
 
 #define __PACKED __attribute__((__packed__))
 #define __maybe_unused __attribute__((unused))
+#define __packed __attribute__((packed))
 #define __aligned(align) __attribute__((aligned(align)))
 #define BUS_ACCESS_STR(access) (access == bus_read_access ? "read" : access == bus_write_access ? "write" \
 																								: "execute")
@@ -42,7 +43,7 @@ typedef enum
 {
 	bus_read_access = 0,
 	bus_write_access,
-	bus_instr_access,
+	bus_exec_access,
 
 	bus_access_type_max
 } bus_access_type;

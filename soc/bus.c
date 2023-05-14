@@ -19,7 +19,7 @@ int soc_bus_access(struct soc *soc, privilege_level priv_level,
 		}
 	}
 
-	die("%s: unampped address at: %#016lx len: %d cycle: %ld  pc: %#016lx\n",
+	die("bus %s: unampped address at: %#016lx len: %d cycle: %ld  pc: %#016lx\n",
 		BUS_ACCESS_STR(access_type),
 		address,
 		len,

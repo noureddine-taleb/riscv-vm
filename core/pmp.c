@@ -191,7 +191,7 @@ int pmp_check(struct hart *hart, privilege_level __maybe_unused priv_level,
 	uxlen trap_cause;
 	switch (access_type)
 	{
-	case bus_instr_access:
+	case bus_exec_access:
 		trap_cause = trap_cause_instr_access_fault;
 		break;
 	case bus_read_access:

@@ -24,7 +24,7 @@ uxlen hart_fetch(struct hart *hart)
 	uxlen addr = hart->pc;
 
 	return hart->access_memory(hart, hart->curr_priv_mode,
-							   bus_instr_access, addr,
+							   bus_exec_access, addr,
 							   &hart->instruction, sizeof(uxlen));
 }
 

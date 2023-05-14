@@ -71,6 +71,10 @@ int __access_protected_memory(int skip, struct hart *hart,
 							  privilege_level priv_level,
 							  bus_access_type access_type,
 							  uxlen addr, void *value, u8 len);
+int access_supervisor_physical_memory(struct hart *hart,
+							  privilege_level priv_level,
+							  bus_access_type access_type, uxlen addr,
+							  void *value, u8 len);
 void hart_init_csr_regs(struct hart *hart);
 
 #endif /* RISCV_CORE_H */

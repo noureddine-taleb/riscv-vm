@@ -12,7 +12,8 @@ int __access_protected_memory(int skip, struct hart *hart,
 
 	static check_protection memory_protection_layers[] = {
 		vm_check,
-		pmp_check};
+		pmp_check
+	};
 
 	int layers = ARRAY_SIZE(memory_protection_layers);
 	for (int i = skip; i < layers; i++)
@@ -32,4 +33,14 @@ int access_protected_memory(struct hart *hart,
 {
 	return __access_protected_memory(0, hart, priv_level,
 									 access_type, addr, value, len);
+}
+
+int access_supervisor_physical_memory(struct hart *hart,
+							  privilege_level priv_level,
+							  bus_access_type access_type, uxlen addr,
+							  void *value, u8 len)
+{
+	__access_protected_memory(1, hart, supervisor_mode,
+								bus_read_access, addr, value,
+								len);
 }

@@ -6,26 +6,12 @@
 #include <types.h>
 #include <helpers.h>
 
-/*
- * PTE Flags are arranged as follows, the XWR (bus_access_type) bits are
- * shifted by on in contrast to the PMP, so we simply shift by 1 so we can
- * reuse it
- */
-/*
- * 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0
- */
-/*
- * D | A | G | U | X | W | R | V
- */
-/*
- * simple macro to tranlsate this to the mmu arrangement
- */
-#define ACCESS_TYPE_TO_MMU(access_type) (2 << access_type)
+#define ACCESS_TYPE_TO_MMU(access_type) (1 << access_type)
 
 int mmu_write_csr(__maybe_unused u16 address, struct csr_mapping *map, uxlen val)
 {
 	int mode = SATP_MODE(val);
-	if (mode != 0 && mode != MMU_SATP_MODE_SV39) {
+	if (mode != MMU_SATP_MODE_OFF && mode != MMU_SATP_MODE_SV39) {
 		debug("rv64 unsupported mode = %d", mode);
 		return 0;
 	}
@@ -33,171 +19,160 @@ int mmu_write_csr(__maybe_unused u16 address, struct csr_mapping *map, uxlen val
 	*map->value = val;
 	return 0;
 }
-
+/**
+ * check *virt_addr permissions using page tables,
+ * then translate it into a physical address
+ * and store it into the same pointer *virt_addr
+ * 
+ * on successful translation it returns 0, otherwise != 0
+*/
 int mmu_virt_to_phys(struct hart __maybe_unused *hart,
 					 privilege_level curr_priv,
 					 uxlen *virt_addr, bus_access_type access_type, u8 mxr, u8 sum)
 {
-	/*
-	 * We only have these here for debug purposes
-	 */
-
-	int i, j = 0;
-	uxlen a = 0;
-	uxlen pte = 0;
-	uxlen pte_addr = 0;
-	u8 pte_flags = 0;
-	u8 user_page = 0;
-	u8 mode = SATP_MODE(hart->csr_store.satp);
+	int i;
+	pte_t pte;
 
 	/*
-	 * in machine mode we don't have address translation
+	 * address translation works only with supervisor and user mode
 	 */
-	if ((curr_priv == machine_mode) || mode == MMU_SATP_MODE_OFF)
+	if ((curr_priv > supervisor_mode) || SATP_MODE(hart->csr_store.satp) == MMU_SATP_MODE_OFF)
 		return 0;
 
-	// sv39
 	uxlen vpn[SV39_LEVELS] = {
-		(*virt_addr >> 12) & 0x1ff,
-		(*virt_addr >> 21) & 0x1ff,
 		(*virt_addr >> 30) & 0x1ff,
+		(*virt_addr >> 21) & 0x1ff,
+		(*virt_addr >> 12) & 0x1ff,
 	};
 
 	/*
-	 * 1. Let a be satp.ppn × PAGESIZE, and let i = LEVELS − 1. (For Sv32, PAGESIZE=2^12 and LEVELS=2.)
+	 * this is not a real pointer (guest pointer), we just made it so
+	 * to benefit from pointer arithmetics
 	 */
-	a = (hart->csr_store.satp & 0x3FFFFF) * PAGE_SIZE;
+	pte_t *page_table = SATP_PPN(hart->csr_store.satp) << PAGE_SHIFT;
 
-	for (i = (SV39_LEVELS - 1), j = 0; i >= 0; i--, j++)
+	for (i = 0; i < SV39_LEVELS; i++)
 	{
 		/*
-		 * 2. Let pte be the value of the PTE at address a+va.vpn[i]×PTESIZE. (For Sv32, PTESIZE=4.)
-		 * If accessing pte violates a PMA or PMP check, raise an access exception.
+		 * this is another fake pointer
+		 * this doesn't perform any memory access
+		 * it just computes the offset of the pte
 		 */
-		pte_addr = a + (vpn[i] * SV39_PTESIZE);
+		pte_t *pte_addr = &page_table[vpn[i]];
 
-		/*
-		 * Here we should raise an exception if PMP violation occurs,
-		 * will be done automatically if read_mem is set to the
-		 * "checked_read_mem()" function.
-		 */
-		__access_protected_memory(1, hart, supervisor_mode,
+		access_supervisor_physical_memory(hart, supervisor_mode,
 								  bus_read_access, pte_addr, &pte,
-								  sizeof(uxlen));
-		pte_flags = pte;
+								  SV39_PTESIZE);
 
 		/*
-		 * 3. If pte.v = 0, or if pte.r = 0 and pte.w = 1, stop and raise a page-fault exception.
+		 * check invalid combinations
 		 */
-		if ((!(pte_flags & MMU_PAGE_VALID)) || ((!(pte_flags & MMU_PAGE_READ)) && (pte_flags & MMU_PAGE_WRITE)) || (pte_flags & MMU_PAGE_PBMT) || (pte_flags & MMU_PAGE_N) || (pte_flags & MMU_PAGE_RESERVED))
+		if (!pte.valid || (!pte.read && pte.write) || pte.pbmt || pte.n || pte.__reserved)
 			return -1;
 
 		/*
-		 * 4. Otherwise, the PTE is valid. If pte.r = 1 or pte.x = 1, go to step 5. Otherwise, this PTE is a
-		 * pointer to the next level of the page table. Let i = i − 1. If i < 0, stop and raise a page-fault
-		 * exception. Otherwise, let a = pte.ppn × PAGESIZE and go to step 2.
+		 * if any RWX flag is set then we are in a leaf
 		 */
-		/*
-		 * check if any RWX flag is set
-		 */
-		if (pte_flags & 0xA)
+		if (pte.read || pte.write || pte.exec)
 			break;
 
-		a = ((pte >> 10) & (((uxlen)1 << 44) - 1)) * PAGE_SIZE;
+		/*
+		 * check invalid combinations
+		 * D, A and U are reserved in non leaf pte
+		 */
+		if (pte.dirty || pte.accessed || pte.user)
+			return -1;
+
+		page_table = PTE_PPN(pte) << PAGE_SHIFT;
 	}
-
-	if (i < 0)
+	/**
+	 * no leaf pte found
+	*/
+	if (i == SV39_LEVELS) {
+		debug("page fault: no leaf found!\n");
 		return -1;
-
-	/*
-	 * 5. A leaf PTE has been found. Determine if the requested memory access is allowed by the
-	 * pte.r, pte.w, pte.x, and pte.u bits, given the current privilege mode and the value of the SUM
-	 * and MXR fields of the mstatus register. If not, stop and raise a page-fault exception.
-	 */
-	user_page = pte_flags & MMU_PAGE_USER;
+	}
 
 	/*
 	 * User has only access to user pages
 	 */
-	if ((curr_priv == user_mode) && !user_page)
+	if (curr_priv == user_mode && !pte.user)
 	{
-		printf("page fault: user access to higher priv page!\n");
+		debug("page fault: user access to higher priv page!\n");
 		return -1;
 	}
 
 	/*
 	 * Supervisor only has access to user pages if SUM = 1
+	 * but only for loads and stores, exec is never allowed
+	 * permit Supervisor User Memory access
 	 */
-	if ((curr_priv == supervisor_mode) && user_page && !sum)
+	if (curr_priv == supervisor_mode && pte.user && (!sum || access_type == bus_exec_access)) {
+		debug("page fault: supervisor access user pages!\n");
 		return -1;
-
-	/*
-	 * Check if MXR
-	 */
-	if ((access_type == bus_read_access) && (ACCESS_TYPE_TO_MMU(bus_instr_access) & pte_flags) && mxr)
-		pte_flags |= MMU_PAGE_READ;
-
-	if (!(ACCESS_TYPE_TO_MMU(access_type) & pte_flags))
-		return -1;
-
-	/*
-	 * physical addresses are 64 Bit wide!!! even on RV39 systems
-	 */
-	uxlen ppn[SV39_LEVELS] = {
-		(pte >> 10) & 0x1ff,
-		(pte >> 19) & 0x1ff,
-		(pte >> 28) & 0x3ffffff,
-	};
-
-	/*
-	 * physical addresses are at least 34 Bits wide, so we need u64 here
-	 */
-	u64 phys_addr_translation[SV39_LEVELS] = {
-		(ppn[2] << 30) | (ppn[1] << 21) | (ppn[0] << 12) | (*virt_addr & 0xfff),
-		(ppn[2] << 30) | (ppn[1] << 21) | (*virt_addr & 0x1fffff),
-		(ppn[2] << 30) | (*virt_addr & 0x3fffffff),
-	};
-
-	/*
-	 * 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault exception.
-	 */
-	if (i > 0)
-	{
-		for (int k = 0; k < i; k++)
-		{
-			if (ppn[k] != 0)
-			{
-				return -1;
-			}
-		}
 	}
 
 	/*
-	 * 7. If pte.a = 0, or if the memory access is a store and pte.d = 0, either raise a page-fault exception or:
-	 *  - Set pte.a to 1 and, if the memory access is a store, also set pte.d to 1.
-	 *  - If this access violates a PMA or PMP check, raise an access exception.
-	 *  - This update and the loading of pte in step 2 must be atomic; in particular, no intervening store to the PTE may be perceived to have occurred in-between.
+	 * Check if MXR
+	 * Make Executable Readable
 	 */
-	if ((!(pte_flags & MMU_PAGE_ACCESSED)) || ((access_type == bus_write_access) && !(pte_flags & MMU_PAGE_DIRTY)))
-		return -1;
+	if (mxr && pte.exec)
+		pte.read = 1;
 
-	/*
-	 * 8. The translation is successful. The translated physical address is given as follows:
-	 * - pa.pgoff = va.pgoff.
-	 * - If i > 0, then this is a superpage translation and pa.ppn[i − 1 : 0] = va.vpn[i − 1 : 0].
-	 * - pa.ppn[LEVELS − 1 : i] = pte.ppn[LEVELS − 1 : i].
-	 */
-	*virt_addr = phys_addr_translation[i];
+	if (!(ACCESS_TYPE_TO_MMU(access_type) & PTE_ACCESS_FLAGS(pte))) {
+		debug("page fault: insufficiant permissions! access=%#x pte=%#x\n", ACCESS_TYPE_TO_MMU(access_type), PTE_ACCESS_FLAGS(pte));
+		return -1;
+	}
+
+	/**
+	 * now let's check the alignement of the physical page
+	*/
+	uxlen ppn[SV39_LEVELS] = {
+		pte.ppn2,
+		pte.ppn1,
+		pte.ppn0,
+	};
+
+	/**
+	 * if we found leaf pte after i iteration
+	 * all other remaining ppn should be zero
+	*/
+	for (int j = i + 1; j < SV39_LEVELS; j++) {
+		if (ppn[j]) { // ppn not aligned
+			debug("page fault: non aligned physical address!\n");
+			return -1;
+		}
+	}
+
+	/**
+	 * if A is not set trigger page fault
+	 * on write access D bit should also be set
+	*/
+	if (!pte.accessed || ((access_type == bus_write_access) && !pte.dirty)) {
+		debug("page fault: dirty or accessed bit are not set!\n");
+		return -1;
+	}
+
+	u64 offsets[SV39_LEVELS] = {
+		(*virt_addr & 0x3fffffff),
+		(*virt_addr & 0x1fffff),
+		(*virt_addr & 0xfff),
+	};
+	*virt_addr = (PTE_PPN(pte) << PAGE_SHIFT) | offsets[i];
 	return 0;
 }
 
-privilege_level check_mpoverride(struct hart *hart, bus_access_type access_type)
+/**
+ * M mode could masquerade as another priv level (in MPP)
+ * to use mmu to perform loads and stores but no exec
+ * when MPRV (Modify PRiVlege) is set
+*/
+privilege_level effective_priv_level(struct hart *hart, bus_access_type access_type)
 {
-	if (access_type == bus_instr_access)
+	if (access_type == bus_exec_access)
 		return hart->curr_priv_mode;
 
-	int mprv = GET_BIT(hart->csr_store.status,
-					   TRAP_XSTATUS_MPBIT);
+	int mprv = GET_BIT(hart->csr_store.status, TRAP_XSTATUS_MPRV_BIT);
 	privilege_level ret_val = GET_BIT_RANGE(hart->csr_store.status, TRAP_XSTATUS_MPP_BITS, 2);
 	return mprv ? ret_val : hart->curr_priv_mode;
 }
@@ -206,12 +181,11 @@ int vm_check(struct hart *hart, privilege_level __maybe_unused priv_level,
 			 bus_access_type access_type, uxlen *addr,
 			 __maybe_unused void *value, __maybe_unused u8 len)
 {
-	privilege_level internal_priv_level =
-		check_mpoverride(hart, access_type);
+	privilege_level internal_priv_level = effective_priv_level(hart, access_type);
 	uxlen trap_cause;
 	switch (access_type)
 	{
-	case bus_instr_access:
+	case bus_exec_access:
 		trap_cause = trap_cause_instr_page_fault;
 		break;
 	case bus_read_access:
