@@ -256,7 +256,7 @@ int csr_read_reg(struct csr_mapping *csr_regs, privilege_level curr_priv_mode,
 			((address >> 8) & 0x3));
 #endif
 
-	if (address <= CSR_ADDR_MAX && csr_regs[address].valid && CSR_READABLE(address, curr_priv_mode))
+	if (csr_regs[address].valid && CSR_READABLE(address, curr_priv_mode))
 	{
 		if (csr_regs[address].read)
 			return csr_regs[address].read(address,
@@ -282,8 +282,7 @@ int csr_write_reg(struct csr_mapping *csr_regs, privilege_level curr_priv_mode,
 			csr_regs[address].valid, val, address, curr_priv_mode,
 			((address >> 8) & 0x3));
 #endif
-	// todo: raise illegal instruction if access faults
-	if (address <= CSR_ADDR_MAX && csr_regs[address].valid && CSR_WRITABLE(address, curr_priv_mode))
+	if (csr_regs[address].valid && CSR_WRITABLE(address, curr_priv_mode))
 	{
 		if (csr_regs[address].write)
 			return csr_regs[address].write(address,
@@ -296,7 +295,7 @@ int csr_write_reg(struct csr_mapping *csr_regs, privilege_level curr_priv_mode,
 		return 0;
 	}
 
-	printf("csr write fault(valid=%d) addr=%#x, curr-priv=%d(reg priv=%d)\n",
+	debug("csr write fault(valid=%d) addr=%#x, curr-priv=%d(reg priv=%d)\n",
 		   csr_regs[address].valid, address, curr_priv_mode,
 		   ((address >> 8) & 0x3));
 	return -1;

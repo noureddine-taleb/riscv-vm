@@ -127,6 +127,7 @@ int uart_bus_access(struct ns16550 *uart, privilege_level __maybe_unused priv_le
 	if (len != 1)
 		die("uart write: Only single byte access allowed!\n");
 
+	// debug("ns16550a: reg=%#016llx access=%s priv=%d value=%#016x", address, BUS_ACCESS_STR(access_type), priv_level, *(u8 *)value);
 	if (access_type == bus_write_access)
 	{
 		val_u8 = *(u8 *)value;

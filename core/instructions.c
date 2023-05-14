@@ -449,8 +449,6 @@ void CSRRSx(struct hart *hart, uxlen new_val)
 {
 	uxlen csr_val = 0;
 	u16 csr_addr = (u16)(hart->imm & 0xfff);
-	uxlen csr_mask = hart->csr_regs[csr_addr].mask;
-	uxlen new_csr_val = 0;
 
 	if (csr_read_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr, &csr_val))
 	{
@@ -458,27 +456,23 @@ void CSRRSx(struct hart *hart, uxlen new_val)
 		return;
 	}
 
-	new_csr_val = (new_val & csr_mask); // todo: remove
-
 	if (hart->rs1 != 0)
 	{
 		if (csr_write_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr,
-						  csr_val | new_csr_val))
+						  csr_val | new_val))
 		{
 			prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
 			return;
 		}
 	}
 
-	hart->x[hart->rd] = csr_val & csr_mask;
+	hart->x[hart->rd] = csr_val;
 }
 
 void CSRRCx(struct hart *hart, uxlen new_val)
 {
 	uxlen csr_val = 0;
 	u16 csr_addr = (u16)(hart->imm & 0xfff);
-	uxlen csr_mask = hart->csr_regs[csr_addr].mask;
-	uxlen new_csr_val = 0;
 
 	if (csr_read_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr, &csr_val))
 	{
@@ -486,18 +480,16 @@ void CSRRCx(struct hart *hart, uxlen new_val)
 		return;
 	}
 
-	new_csr_val = (new_val & csr_mask); // todo: remove
-
 	if (hart->rs1 != 0)
 	{
 		if (csr_write_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr,
-						  csr_val & ~new_csr_val))
+						  csr_val & ~new_val))
 		{
 			prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
 			return;
 		}
 	}
-	hart->x[hart->rd] = csr_val & csr_mask;
+	hart->x[hart->rd] = csr_val;
 }
 
 void CSRRW(struct hart __maybe_unused *hart)
