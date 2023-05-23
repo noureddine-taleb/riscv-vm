@@ -7,7 +7,7 @@
 
 	chosen {
 		bootargs = "earlycon=ns16550a,mmio,0x10000000 console=ttyS0 init=/bin/sh";
-		stdout-path = "/uart@10000000";
+		stdout-path = "/soc/uart0";
 	};
 
 	cpus {

@@ -4,6 +4,8 @@
 #include <soc.h>
 #include <helpers.h>
 
+// #define CSR_TRACE
+
 char *csr_names[CSR_ADDR_MAX] = {
 	[0x001] = "fflags",
 	[0x002] = "frm",
@@ -348,8 +350,8 @@ void hart_init_csr_regs(struct hart *hart)
 						 &hart->csr_store.mtval);
 	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MIP, CSR_MIP_MIE_MASK,
 						 &hart->csr_store.ip);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MENVCFG, CSR_MASK_NONE,
-						 &hart->csr_store.menvcfg);
+	// INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MENVCFG, CSR_MASK_NONE,
+	// 					 &hart->csr_store.menvcfg);
 
 	/*
 	 * Physical Memory Protection
