@@ -279,7 +279,7 @@ int csr_write_reg(struct csr_reg *csr_regs, privilege_level curr_priv_mode,
 				  u16 address, uxlen val)
 {
 #ifdef CSR_TRACE
-	debug("csr(%s) write (valid=%d, value=%x) addr=%#x, curr-priv=%d(reg priv=%d)\n",
+	debug("csr(%s) write (valid=%d, value=%lx) addr=%#x, curr-priv=%d(reg priv=%d)\n",
 			get_csr_name(address),
 			csr_regs[address].valid, val, address, curr_priv_mode,
 			((address >> 8) & 0x3));
@@ -334,7 +334,7 @@ void hart_init_csr_regs(struct hart *hart)
 						 &hart->csr_store.mideleg);
 	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MIE, CSR_MIP_MIE_MASK,
 						 &hart->csr_store.ie);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MTVEC, CSR_MTVEC_MASK,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MTVEC, CSR_MASK_ALL,
 						 &hart->csr_store.mtvec);
 	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MCOUNTEREN, CSR_MASK_NONE,
 						 &hart->csr_store.mcounteren);
@@ -402,7 +402,7 @@ void hart_init_csr_regs(struct hart *hart)
 						 &hart->csr_store.ie);
 	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_SIP, CSR_SIP_SIE_MASK,
 						 &hart->csr_store.ip);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_STVEC, CSR_STVEC_MASK,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_STVEC, CSR_MASK_ALL,
 						 &hart->csr_store.stvec);
 	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_SCOUNTEREN, CSR_MASK_NONE,
 						 &hart->csr_store.scounteren);

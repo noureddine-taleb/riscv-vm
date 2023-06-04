@@ -5,6 +5,8 @@
 #include <hart.h>
 #include <helpers.h>
 
+// #define TRAP_TRACE
+
 void hart_update_ip(struct hart *hart, u8 mei, u8 mti, u8 msi)
 {
 	/*
@@ -105,7 +107,7 @@ void serve_exception(struct hart *hart,
 		hart->csr_store.mcause = ((is_interrupt << (XLEN - 1)) | cause);
 		hart->csr_store.mtval = tval;
 
-		hart->pc = hart->csr_store.mtvec;
+		hart->pc = (hart->csr_store.mtvec & 0xFFFFFFFFFFFFFFFC) + ((hart->csr_store.mtvec & 0x3) == 1 && is_interrupt ? cause*4 : 0);
 	}
 	else if (serving_priv_mode == supervisor_mode)
 	{
@@ -121,7 +123,7 @@ void serve_exception(struct hart *hart,
 		hart->csr_store.stval = tval;
 		hart->csr_store.scause = ((is_interrupt << (XLEN - 1)) | cause);
 
-		hart->pc = hart->csr_store.stvec;
+		hart->pc = (hart->csr_store.stvec & 0xFFFFFFFFFFFFFFFC) + ((hart->csr_store.stvec & 0x3) == 1 && is_interrupt ? cause*4 : 0);
 	}
 	else
 	{
@@ -180,6 +182,9 @@ void prepare_sync_trap(struct hart *hart, uxlen cause, uxlen tval)
 		hart->sync_trap_pending = 1;
 		hart->sync_trap_cause = cause;
 		hart->sync_trap_tval = tval;
+#ifdef CSR_TRACE
+		debug("trap: cause %ld tval=%#lx\n", cause, tval);
+#endif
 	} else {
 		die("double fault (trap while handling another trap)");
 	}
