@@ -252,7 +252,7 @@ int csr_read_reg(struct csr_reg *csr_regs, privilege_level curr_priv_mode,
 				 u16 address, uxlen *out_val)
 {
 #ifdef CSR_TRACE
-	debug("csr(%s) read (valid=%d, value=%#lx) addr=%#x, curr-priv=%d(reg priv=%d)\n",
+	debug("csr(%s) read (valid=%d, value=%#lx) addr=%#x, curr-priv=%d(reg priv=%d)",
 			get_csr_name(address),
 			csr_regs[address].valid, *csr_regs[address].value, address, curr_priv_mode,
 			((address >> 8) & 0x3));
@@ -269,7 +269,8 @@ int csr_read_reg(struct csr_reg *csr_regs, privilege_level curr_priv_mode,
 		return 0;
 	}
 
-	debug("csr read fault(valid=%d) addr=%#x, curr-priv=%d(reg priv=%d)\n",
+	debug("csr(%s) read fault(valid=%d) addr=%#x, curr-priv=%d(reg priv=%d)",
+		   get_csr_name(address),
 		   csr_regs[address].valid, address, curr_priv_mode,
 		   ((address >> 8) & 0x3));
 	return -1;
@@ -279,7 +280,7 @@ int csr_write_reg(struct csr_reg *csr_regs, privilege_level curr_priv_mode,
 				  u16 address, uxlen val)
 {
 #ifdef CSR_TRACE
-	debug("csr(%s) write (valid=%d, value=%lx) addr=%#x, curr-priv=%d(reg priv=%d)\n",
+	debug("csr(%s) write (valid=%d, value=%lx) addr=%#x, curr-priv=%d(reg priv=%d)",
 			get_csr_name(address),
 			csr_regs[address].valid, val, address, curr_priv_mode,
 			((address >> 8) & 0x3));
@@ -297,7 +298,8 @@ int csr_write_reg(struct csr_reg *csr_regs, privilege_level curr_priv_mode,
 		return 0;
 	}
 
-	debug("csr write fault(valid=%d) addr=%#x, curr-priv=%d(reg priv=%d)\n",
+	debug("csr(%s) write fault(valid=%d) addr=%#x, curr-priv=%d(reg priv=%d)",
+		   get_csr_name(address),
 		   csr_regs[address].valid, address, curr_priv_mode,
 		   ((address >> 8) & 0x3));
 	return -1;
@@ -306,51 +308,51 @@ int csr_write_reg(struct csr_reg *csr_regs, privilege_level curr_priv_mode,
 void hart_init_csr_regs(struct hart *hart)
 {
 	u16 i = 0;
-	// 2UL << (XLEN - 2) = means xlen = 64
+	// 2UL << (XLEN - 2) = means xlen == 64
 	hart->csr_store.isa = SUPPORTED_EXTENSIONS | (2UL << (XLEN - 2));
 
 	/*
 	 * Machine Information Registers
 	 */
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MVENDORID, CSR_MASK_NONE,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MVENDORID, CSR_MASK_NONE,
 						 &hart->csr_store.vendorid);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MARCHID, CSR_MASK_NONE,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MARCHID, CSR_MASK_NONE,
 						 &hart->csr_store.archid);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MIMPID, CSR_MASK_NONE,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MIMPID, CSR_MASK_NONE,
 						 &hart->csr_store.impid);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MHARTID, CSR_MASK_NONE,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MHARTID, CSR_MASK_NONE,
 						 &hart->csr_store.hartid);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MISA, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MISA, CSR_MASK_ALL,
 						 &hart->csr_store.isa); // CSR_MASK_ALL is necessary or else the software can't read the value
 
 	/*
 	 * Machine Trap Registers
 	 */
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MSTATUS, CSR_MSTATUS_MASK,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MSTATUS, CSR_MSTATUS_MASK,
 						 &hart->csr_store.status);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MEDELEG, CSR_MEDELEG_MASK,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MEDELEG, CSR_MEDELEG_MASK,
 						 &hart->csr_store.medeleg);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MIDELEG, CSR_MIDELEG_MASK,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MIDELEG, CSR_MIDELEG_MASK,
 						 &hart->csr_store.mideleg);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MIE, CSR_MIP_MIE_MASK,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MIE, CSR_MIP_MIE_MASK,
 						 &hart->csr_store.ie);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MTVEC, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MTVEC, CSR_MASK_ALL,
 						 &hart->csr_store.mtvec);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MCOUNTEREN, CSR_MASK_NONE,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MCOUNTEREN, CSR_MASK_NONE,
 						 &hart->csr_store.mcounteren);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MCOUNTERINHIBIT, CSR_MASK_NONE,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MCOUNTERINHIBIT, CSR_MASK_NONE,
 						 &hart->csr_store.mcounterinhibit);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MSCRATCH, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MSCRATCH, CSR_MASK_ALL,
 						 &hart->csr_store.mscratch);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MEPC, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MEPC, CSR_MASK_ALL,
 						 &hart->csr_store.mepc);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MCAUSE, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MCAUSE, CSR_MASK_ALL,
 						 &hart->csr_store.mcause);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MTVAL, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MTVAL, CSR_MASK_ALL,
 						 &hart->csr_store.mtval);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MIP, CSR_MIP_MIE_MASK,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MIP, CSR_MIP_MIE_MASK,
 						 &hart->csr_store.ip);
-	// INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MENVCFG, CSR_MASK_NONE,
+	// INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MENVCFG, CSR_MASK_NONE,
 	// 					 &hart->csr_store.menvcfg);
 
 	/*
@@ -396,44 +398,45 @@ void hart_init_csr_regs(struct hart *hart)
 	/*
 	 * Supervisor Trap Registers
 	 */
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_SSTATUS, CSR_SSTATUS_MASK,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_SSTATUS, CSR_SSTATUS_MASK,
 						 &hart->csr_store.status);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_SIE, CSR_SIP_SIE_MASK,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_SIE, CSR_SIP_SIE_MASK,
 						 &hart->csr_store.ie);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_SIP, CSR_SIP_SIE_MASK,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_SIP, CSR_SIP_SIE_MASK,
 						 &hart->csr_store.ip);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_STVEC, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_STVEC, CSR_MASK_ALL,
 						 &hart->csr_store.stvec);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_SCOUNTEREN, CSR_MASK_NONE,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_SCOUNTEREN, CSR_MASK_NONE,
 						 &hart->csr_store.scounteren);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_SSCRATCH, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_SSCRATCH, CSR_MASK_ALL,
 						 &hart->csr_store.sscratch);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_SEPC, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_SEPC, CSR_MASK_ALL,
 						 &hart->csr_store.sepc);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_SCAUSE, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_SCAUSE, CSR_MASK_ALL,
 						 &hart->csr_store.scause);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_STVAL, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_STVAL, CSR_MASK_ALL,
 						 &hart->csr_store.stval);
 
 	/*
 	 * Supervisor Address Translation and Protection
 	 */
-	INIT_CSR_REG_SPECIAL(hart->csr_regs, CSR_ADDR_SATP, CSR_SATP_MASK,
+	INIT_CSR_REG_SPECIAL(hart->csr_regs, CSR_SATP, CSR_SATP_MASK,
 						 &hart->csr_store.satp, NULL, mmu_write_csr);
 
 	/*
 	 * cycle, time, instret
 	 */
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MCYCLE, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MCYCLE, CSR_MASK_ALL,
 						 &hart->csr_store.cycle);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_MINSTRET, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_MINSTRET, CSR_MASK_ALL,
 						 &hart->csr_store.instret);
 
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_CYCLE, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_CYCLE, CSR_MASK_ALL,
 						 &hart->csr_store.cycle);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_TIME, CSR_MASK_ALL,
+	// TIME is mapped to clint time device
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_TIME, CSR_MASK_ALL,
 						 &hart->soc->clint.regs[clint_mtime]);
-	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_ADDR_INSTRET, CSR_MASK_ALL,
+	INIT_CSR_REG_DEFAULT(hart->csr_regs, CSR_INSTRET, CSR_MASK_ALL,
 						 &hart->csr_store.instret);
 
 	/*
@@ -442,9 +445,9 @@ void hart_init_csr_regs(struct hart *hart)
 	static uxlen dummy_hpm;
 	for (i = 3; i < CSR_HPMCOUNTER_WARL_MAX; i++)
 	{
-		INIT_CSR_REG_DEFAULT(hart->csr_regs, (CSR_ADDR_MCYCLE + i),
+		INIT_CSR_REG_DEFAULT(hart->csr_regs, (CSR_MCYCLE + i),
 							 CSR_MASK_NONE, &dummy_hpm);
-		INIT_CSR_REG_DEFAULT(hart->csr_regs, (CSR_ADDR_CYCLE + i),
+		INIT_CSR_REG_DEFAULT(hart->csr_regs, (CSR_CYCLE + i),
 							 CSR_MASK_NONE, &dummy_hpm);
 	}
 }

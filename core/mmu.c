@@ -8,11 +8,24 @@
 
 #define ACCESS_TYPE_TO_MMU(access_type) (1 << access_type)
 
+static char *satp_modes[] = {
+	[0] = "Bare",
+	[8] = "Sv39",
+	[9] = "Sv48",
+	[10] = "Sv57",
+};
+
+char *get_satp_mode(int mode) {
+	if (satp_modes[mode])
+		return satp_modes[mode];
+	return "Reserved";
+}
+
 int mmu_write_csr(__maybe_unused u16 address, struct csr_reg *map, uxlen val)
 {
 	int mode = SATP_MODE(val);
 	if (mode != MMU_SATP_MODE_OFF && mode != MMU_SATP_MODE_SV39) {
-		debug("rv64 unsupported mode = %d", mode);
+		debug("rv64 unsupported mode = %d(%s)", mode, get_satp_mode(mode));
 		return 0;
 	}
 

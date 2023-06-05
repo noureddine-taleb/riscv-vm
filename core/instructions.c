@@ -530,16 +530,18 @@ void ECALL(struct hart __maybe_unused *hart)
 
 void EBREAK(struct hart __maybe_unused *hart)
 {
-	die("EBREAK");
+	prepare_sync_trap(hart, trap_cause_breakpoint, 0);
 }
 
 void MRET(struct hart __maybe_unused *hart)
 {
+	// debug("mret curr=%d target=%ld", hart->curr_priv_mode, GET_BIT_RANGE(hart->csr_store.status, TRAP_XSTATUS_MPP_BITS, 2));
 	return_from_exception(hart, hart->curr_priv_mode);
 }
 
 void SRET(struct hart __maybe_unused *hart)
 {
+	// debug("sret curr=%d target=%ld", hart->curr_priv_mode, GET_BIT(hart->csr_store.status, TRAP_XSTATUS_SPP_BIT));
 	return_from_exception(hart, hart->curr_priv_mode);
 }
 

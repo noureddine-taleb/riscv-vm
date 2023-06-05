@@ -1,4 +1,4 @@
-CFLAGS := -Wall -Wextra -Iinclude -g $(DEFINES)
+CFLAGS := -Wall -Wextra -Iinclude -g $(DEFINES) -O2
 CC := clang
 TARGET := ./riscv-vm
 FDT := ./dts/rv64_dt.dtb

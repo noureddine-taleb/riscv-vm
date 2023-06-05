@@ -145,13 +145,20 @@ void return_from_exception(struct hart *hart, privilege_level serving_priv_mode)
 		hart->curr_priv_mode = previous_priv_level;
 		hart->override_pc = hart->csr_store.mepc;
 
-		pie =
-			(hart->csr_store.status >> (TRAP_XSTATUS_UPIE_BIT +
-										serving_priv_mode)) &
-			0x1;
+		pie = GET_BIT(hart->csr_store.status, TRAP_XSTATUS_UPIE_BIT + serving_priv_mode);
 		UPDATE_BIT(hart->csr_store.status, serving_priv_mode, pie);
-		CLEAR_BIT(hart->csr_store.status,
-				  (TRAP_XSTATUS_UPIE_BIT + serving_priv_mode));
+
+		/**
+		 * house keeping
+		 * set mpie = 1
+		 * set mpp = U
+		 * if mpp != M then set mprv = 0
+		*/
+		SET_BIT(hart->csr_store.status, TRAP_XSTATUS_UPIE_BIT + serving_priv_mode);
+		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_MPP_BITS, 0);
+		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_MPP_BITS + 1, 0);
+		if (previous_priv_level != machine_mode)
+			UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_MPRV_BIT, 0);
 	}
 	else if (serving_priv_mode == supervisor_mode)
 	{
@@ -160,14 +167,20 @@ void return_from_exception(struct hart *hart, privilege_level serving_priv_mode)
 		hart->curr_priv_mode = previous_priv_level;
 		hart->override_pc = hart->csr_store.sepc;
 
-		pie =
-			(hart->csr_store.status >> (TRAP_XSTATUS_UPIE_BIT +
-										serving_priv_mode)) &
-			0x1;
+		pie = GET_BIT(hart->csr_store.status, TRAP_XSTATUS_UPIE_BIT + serving_priv_mode);
 		UPDATE_BIT(hart->csr_store.status, serving_priv_mode, pie);
-		CLEAR_BIT(hart->csr_store.status,
-				  (TRAP_XSTATUS_UPIE_BIT + serving_priv_mode));
-	}
+		CLEAR_BIT(hart->csr_store.status, TRAP_XSTATUS_UPIE_BIT + serving_priv_mode);
+		/**
+		 * house keeping
+		 * set spie = 1
+		 * set spp = U
+		 * if spp != M then set mprv = 0
+		*/
+		SET_BIT(hart->csr_store.status, TRAP_XSTATUS_UPIE_BIT + serving_priv_mode);
+		UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_SPP_BIT, 0);
+		if (previous_priv_level != machine_mode)
+			UPDATE_BIT(hart->csr_store.status, TRAP_XSTATUS_MPRV_BIT, 0);
+	}		
 	else
 	{
 		die("returning from exception by unsupported priv level = %d",
