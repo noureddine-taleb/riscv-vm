@@ -6,7 +6,7 @@
 	model = "riscv-virtio,qemu";
 
 	chosen {
-		bootargs = "earlycon=ns16550a,mmio,0x10000000 console=ttyS0 init=/bin/sh";
+		bootargs = "earlycon=ns16550a,mmio,0x10000000 console=ttyS0 init=/bin/ls rdinit=\"/bin/ls -a\"";
 		stdout-path = "/soc/uart0";
 	};
 
