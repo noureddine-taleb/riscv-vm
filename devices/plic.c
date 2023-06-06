@@ -95,7 +95,7 @@ void plic_set_pending_interrupt(struct plic *plic, u32 interrupt_id, u8 pending)
 u8 plic_check_interrupts(struct plic *plic)
 {
 	u32 i, j = 0;
-	u32 irq_id_count = 0;
+	u32 irq = 0;
 	u32 irq_to_trigger = 0;
 	u8 highest_prio = 0;
 
@@ -104,33 +104,32 @@ u8 plic_check_interrupts(struct plic *plic)
 	 */
 	for (i = 0; i < NR_ENABLE_REGS; i++)
 	{
-		if ((!plic->enable_bits[i]) || (!plic->pending_bits[i]))
+		if ((plic->enable_bits[i] & plic->pending_bits[i]) == 0)
 			continue;
 
-		for (j = 0; j < sizeof(plic->enable_bits[0]) * 8; j++)
+		irq = i * (sizeof(plic->enable_bits[0]) * 8);
+		for (j = 0; j < sizeof(plic->enable_bits[0]) * 8; j++, irq++)
 		{
 			if (GET_BIT(plic->enable_bits[i], j) &&
 				GET_BIT(plic->pending_bits[i], j) &&
-				(plic->priority[irq_id_count] >=
-				 plic->priority_threshold))
+				plic->priority[irq] >= plic->priority_threshold
+			  )
 			{
 				if (GET_BIT(plic->claimed_bits[i], j))
 				{
-					UPDATE_BIT(plic->pending_bits[i], j, 0);
+					CLEAR_BIT(plic->pending_bits[i], j);
+					continue;
 				}
-				else if ((plic->priority[irq_id_count] >
-						  highest_prio))
+				
+				/*
+				* find irq with highest prio
+				*/
+				if (plic->priority[irq] > highest_prio)
 				{
-					/*
-					 * find irq with highest prio
-					 */
-					highest_prio =
-						plic->priority[irq_id_count];
-					irq_to_trigger = irq_id_count;
+					highest_prio = plic->priority[irq];
+					irq_to_trigger = irq;
 				}
 			}
-
-			irq_id_count++;
 		}
 	}
 

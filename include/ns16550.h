@@ -4,6 +4,11 @@
 #include <types.h>
 #include <pthread.h>
 
+// TODO: investigate why linux 6.3 seems to have hard coded irq of 1 for 8250/16550
+// because it sets its priority in plic to 0 effectively disabling it while activating
+// irq 0x1 instead, this used to be 0xa
+#define NS16550_IRQ 0x1
+
 struct uart_buffer
 {
 	bool full;

@@ -75,7 +75,7 @@ void soc_run(struct soc *soc)
 		hart_run(&soc->hart0);
 
 		uart_irq_pending = uart_check_interrupts(&soc->ns16550);
-		plic_set_pending_interrupt(&soc->plic, 10, uart_irq_pending);
+		plic_set_pending_interrupt(&soc->plic, NS16550_IRQ, uart_irq_pending);
 
 		mei = plic_check_interrupts(&soc->plic);
 		clint_check_interrupts(&soc->clint, &msi, &mti);

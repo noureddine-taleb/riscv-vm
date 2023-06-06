@@ -6,7 +6,7 @@
 	model = "riscv-virtio,qemu";
 
 	chosen {
-		bootargs = "earlycon=ns16550a,mmio,0x10000000 console=ttyS0 init=/bin/ls rdinit=\"/bin/ls -a\"";
+		bootargs = "earlycon=ns16550a,mmio,0x10000000 console=ttyS0 init=/bin/ls rdinit=/bin/sh";
 		stdout-path = "/soc/uart0";
 	};
 
@@ -60,7 +60,7 @@
 		};
 
 		uart0: serial@10000000 {
-			interrupts = <0xa>;
+			interrupts = <0x01>;
 			interrupt-parent = <&plic0>;
 			clock-frequency = <0x384000>;
 			reg = <0x10000000 0x100>;
