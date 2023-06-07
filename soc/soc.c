@@ -67,7 +67,7 @@ void soc_init(struct soc *soc, char *fdt, char *kernel)
 
 void soc_run(struct soc *soc)
 {
-	u8 mei = 0, msi = 0, mti = 0;
+	u8 sei = 0, mei = 0, msi = 0, mti = 0;
 	u8 uart_irq_pending = 0;
 
 	while (1)
@@ -77,10 +77,11 @@ void soc_run(struct soc *soc)
 		uart_irq_pending = uart_check_interrupts(&soc->ns16550);
 		plic_set_pending_interrupt(&soc->plic, NS16550_IRQ, uart_irq_pending);
 
-		mei = plic_check_interrupts(&soc->plic);
+		mei = plic_check_interrupts(&soc->plic, 0);
+		sei = plic_check_interrupts(&soc->plic, 1);
 		clint_check_interrupts(&soc->clint, &msi, &mti);
 
-		hart_update_ip(&soc->hart0, mei, mti, msi);
+		hart_update_ip(&soc->hart0, sei, mei, mti, msi);
 		hart_handle_pending_interrupts(&soc->hart0);
 	}
 }

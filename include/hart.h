@@ -58,7 +58,7 @@ struct hart
 };
 
 void hart_run(struct hart *hart);
-void hart_update_ip(struct hart *hart, u8 ext_int, u8 tim_int, u8 sw_int);
+void hart_update_ip(struct hart *hart, u8 sei, u8 mei, u8 mti, u8 msi);
 u8 hart_handle_pending_interrupts(struct hart *hart);
 
 void hart_init(struct hart *hart, struct soc *soc, u64 _start);

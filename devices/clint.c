@@ -22,6 +22,8 @@ static ixlen get_u8_arr_index_offs(uxlen address)
 	else if (ADDR_WITHIN_RANGE(address, CLINT_MTIME_OFFS, CLINT_REG_SIZE_BYTES))
 	{
 		return (2 * CLINT_REG_SIZE_BYTES);
+	} else {
+		debug("clint accessing unvailable region %#lx", address);
 	}
 
 	return -1;

@@ -7,7 +7,7 @@
 
 // #define TRAP_TRACE
 
-void hart_update_ip(struct hart *hart, u8 mei, u8 mti, u8 msi)
+void hart_update_ip(struct hart *hart, u8 __maybe_unused sei, u8 mei, u8 mti, u8 msi)
 {
 	/*
 	 * IRQ coming from the clint are only assigned to machine mode bits,
@@ -31,7 +31,8 @@ void hart_update_ip(struct hart *hart, u8 mei, u8 mti, u8 msi)
 	/*
 	 * Special seip handling
 	 */
-	UPDATE_BIT(hart->csr_store.ip, trap_cause_super_exti, mei);
+	// TODO: check why linux is not configuring ctx1 probably dtb missing some attrs
+	UPDATE_BIT(hart->csr_store.ip, trap_cause_super_exti, /*sei*/ mei);
 
 	UPDATE_BIT(hart->csr_store.ip, trap_cause_machine_ti, mti);
 

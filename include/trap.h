@@ -56,8 +56,7 @@ enum trap_cause
 	trap_cause_store_amo_page_fault
 };
 
-void hart_update_ip(struct hart *hart, u8 ext_int, u8 tim_int,
-					u8 sw_int);
+void hart_update_ip(struct hart *hart, u8 sei, u8 mei, u8 mti, u8 msi);
 int interrupt_check_pending(struct hart *hart, privilege_level curr_priv_mode,
 							enum interrupt_cause irq,
 							privilege_level *serving_priv_level);
