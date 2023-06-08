@@ -52,15 +52,15 @@
 		plic0: interrupt-controller@c000000 {
 			#interrupt-cells = <1>;
 			interrupt-controller;
-			compatible = "riscv,plic0";
+			compatible = "sifive,plic-1.0.0\0riscv,plic0";
 			reg = <0xC000000 0x4000000>;
 			interrupts-extended = <&cpu0_intc 9>, <&cpu0_intc 11>;
-			riscv,ndev = <1>;
+			riscv,ndev = <0x0a>; // linux >= 3.6 requires max_irq_nr <= riscv,ndev
 			riscv,max-priority = <7>;
 		};
 
 		uart0: serial@10000000 {
-			interrupts = <0x01>;
+			interrupts = <0x0a>;
 			interrupt-parent = <&plic0>;
 			clock-frequency = <0x384000>;
 			reg = <0x10000000 0x100>;
