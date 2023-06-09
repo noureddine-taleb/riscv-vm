@@ -178,9 +178,9 @@ struct csr_reg
 	int (*write)(u16 address, struct csr_reg *map, uxlen val);
 };
 
-int csr_read_reg(struct csr_reg *csr_regs,
+int csr_read_reg(struct hart *hart,
 				 privilege_level curr_priv_mode, u16 address, uxlen *out_val);
-int csr_write_reg(struct csr_reg *csr_regs,
+int csr_write_reg(struct hart *hart,
 				  privilege_level curr_priv_mode, u16 address, uxlen val);
 char *get_csr_name(u16 addr);
 

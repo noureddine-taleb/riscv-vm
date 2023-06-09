@@ -6,13 +6,39 @@
 #include <stdarg.h>
 
 #include <types.h>
+#include <assert.h>
+#include <execinfo.h>
 
-#define debug(fmt, ...) fprintf(stderr, "--------> " fmt "\n", ##__VA_ARGS__)
+/* Obtain a backtrace and print it to stdout. */
+static inline void print_trace (void)
+{
+	void *array[10];
+	char **strings;
+	int size, i;
 
-#define die(fmt, ...)                                       \
+	size = backtrace(array, 10);
+	strings = backtrace_symbols(array, size);
+	if (strings != NULL)
+	{
+	printf ("Obtained %d stack frames.\n", size);
+	for (i = 0; i < size; i++)
+		printf ("%s\n", strings[i]);
+	}
+
+	free (strings);
+}
+
+#ifdef NODEBUG
+	#define debug(fmt, ...) do {} while(0);
+#else
+	#define debug(fmt, ...) fprintf(stderr, "--------> " fmt "\n", ##__VA_ARGS__)
+#endif
+
+#define die(fmt, ...)                                           \
 	{                                                           \
-		debug(fmt, ##__VA_ARGS__); 										\
-		exit(1);                                                \
+		debug(fmt, ##__VA_ARGS__); 								\
+	  	print_trace();											\
+	  	exit(0);												\
 	}
 
 #define ADDR_WITHIN_RANGE(_addr, _start, _size) ((_addr >= _start) && (_addr < (_start + _size)))

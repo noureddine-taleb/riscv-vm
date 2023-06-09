@@ -248,59 +248,64 @@ char *get_csr_name(u16 addr)
 	return buffer;
 }
 
-int csr_read_reg(struct csr_reg *csr_regs, privilege_level curr_priv_mode,
+int csr_read_reg(struct hart *hart, privilege_level curr_priv_mode,
 				 u16 address, uxlen *out_val)
 {
 #ifdef CSR_TRACE
 	debug("csr(%s) read (valid=%d, value=%#lx) addr=%#x, curr-priv=%d(reg priv=%d)",
 			get_csr_name(address),
-			csr_regs[address].valid, *csr_regs[address].value, address, curr_priv_mode,
+			hart->csr_regs[address].valid, *hart->csr_regs[address].value, address, curr_priv_mode,
 			((address >> 8) & 0x3));
 #endif
 
-	if (csr_regs[address].valid && CSR_READABLE(address, curr_priv_mode))
+	// csr is supported
+	if (hart->csr_regs[address].valid && CSR_READABLE(address, curr_priv_mode))
 	{
-		if (csr_regs[address].read)
-			return csr_regs[address].read(address,
-										  &csr_regs[address],
+		if (hart->csr_regs[address].read)
+			return hart->csr_regs[address].read(address,
+										  &hart->csr_regs[address],
 										  out_val);
 
-		*out_val = *csr_regs[address].value & csr_regs[address].mask;
+		*out_val = *hart->csr_regs[address].value & hart->csr_regs[address].mask;
 		return 0;
 	}
 
+	prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
 	debug("csr(%s) read fault(valid=%d) addr=%#x, curr-priv=%d(reg priv=%d)",
 		   get_csr_name(address),
-		   csr_regs[address].valid, address, curr_priv_mode,
+		   hart->csr_regs[address].valid, address, curr_priv_mode,
 		   ((address >> 8) & 0x3));
 	return -1;
 }
 
-int csr_write_reg(struct csr_reg *csr_regs, privilege_level curr_priv_mode,
+int csr_write_reg(struct hart *hart, privilege_level curr_priv_mode,
 				  u16 address, uxlen val)
 {
 #ifdef CSR_TRACE
 	debug("csr(%s) write (valid=%d, value=%lx) addr=%#x, curr-priv=%d(reg priv=%d)",
 			get_csr_name(address),
-			csr_regs[address].valid, val, address, curr_priv_mode,
+			hart->csr_regs[address].valid, val, address, curr_priv_mode,
 			((address >> 8) & 0x3));
 #endif
-	if (csr_regs[address].valid && CSR_WRITABLE(address, curr_priv_mode))
+
+	// csr is supported
+	if (hart->csr_regs[address].valid && CSR_WRITABLE(address, curr_priv_mode))
 	{
-		if (csr_regs[address].write)
-			return csr_regs[address].write(address,
-										   &csr_regs[address], val);
+		if (hart->csr_regs[address].write)
+			return hart->csr_regs[address].write(address,
+										   &hart->csr_regs[address], val);
 		// clear allowed fields
-		*csr_regs[address].value =
-			*csr_regs[address].value & ~csr_regs[address].mask;
+		*hart->csr_regs[address].value =
+			*hart->csr_regs[address].value & ~hart->csr_regs[address].mask;
 		// fill them with new value
-		*csr_regs[address].value |= val & csr_regs[address].mask;
+		*hart->csr_regs[address].value |= val & hart->csr_regs[address].mask;
 		return 0;
 	}
 
+	prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
 	debug("csr(%s) write fault(valid=%d) addr=%#x, curr-priv=%d(reg priv=%d)",
 		   get_csr_name(address),
-		   csr_regs[address].valid, address, curr_priv_mode,
+		   hart->csr_regs[address].valid, address, curr_priv_mode,
 		   ((address >> 8) & 0x3));
 	return -1;
 }

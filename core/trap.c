@@ -196,11 +196,11 @@ void prepare_sync_trap(struct hart *hart, uxlen cause, uxlen tval)
 		hart->sync_trap_pending = 1;
 		hart->sync_trap_cause = cause;
 		hart->sync_trap_tval = tval;
-#ifdef CSR_TRACE
-		debug("trap: cause %ld tval=%#lx\n", cause, tval);
+#ifdef TRAP_TRACE
+		// debug("trap: cause %ld tval=%#lx\n", cause, tval);
 #endif
 	} else {
-		die("double fault (trap while handling another trap)");
+		die("double fault (trap while handling another trap new=%lu old=%lu)", hart->sync_trap_cause, cause);
 	}
 }
 

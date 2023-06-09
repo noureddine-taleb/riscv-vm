@@ -51,7 +51,7 @@ void JAL(struct hart __maybe_unused *hart)
 
 	if (ADDR_MISALIGNED(hart->imm))
 	{
-		debug("Addr misaligned!\n");
+		debug("addr misaligned!\n");
 		prepare_sync_trap(hart, trap_cause_instr_addr_misalign, 0);
 		return;
 	}
@@ -67,7 +67,7 @@ void JALR(struct hart __maybe_unused *hart)
 	target_pc &= ~(1 << 0);
 	if (ADDR_MISALIGNED(target_pc))
 	{
-		debug("Addr misaligned!\n");
+		debug("addr misaligned!\n");
 		prepare_sync_trap(hart, trap_cause_instr_addr_misalign, 0);
 		return;
 	}
@@ -82,7 +82,7 @@ void BEQ(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			debug("Addr misaligned!\n");
+			debug("addr misaligned!\n");
 			prepare_sync_trap(hart,
 							  trap_cause_instr_addr_misalign, 0);
 			return;
@@ -98,7 +98,7 @@ void BNE(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			debug("Addr misaligned!\n");
+			debug("addr misaligned!\n");
 			prepare_sync_trap(hart, trap_cause_instr_addr_misalign, 0);
 			return;
 		}
@@ -116,7 +116,7 @@ void BLT(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			debug("Addr misaligned!\n");
+			debug("addr misaligned!\n");
 			prepare_sync_trap(hart, trap_cause_instr_addr_misalign, 0);
 			return;
 		}
@@ -134,7 +134,7 @@ void BGE(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			debug("Addr misaligned!\n");
+			debug("addr misaligned!\n");
 			prepare_sync_trap(hart,
 							  trap_cause_instr_addr_misalign, 0);
 			return;
@@ -150,7 +150,7 @@ void BLTU(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			debug("Addr misaligned!\n");
+			debug("addr misaligned!\n");
 			prepare_sync_trap(hart,
 							  trap_cause_instr_addr_misalign, 0);
 			return;
@@ -166,7 +166,7 @@ void BGEU(struct hart __maybe_unused *hart)
 	{
 		if (ADDR_MISALIGNED(hart->imm))
 		{
-			debug("Addr misaligned!\n");
+			debug("addr misaligned!\n");
 			prepare_sync_trap(hart,
 							  trap_cause_instr_addr_misalign, 0);
 			return;
@@ -425,22 +425,15 @@ void CSRRWx(struct hart *hart, uxlen new_val)
 
 	if (hart->rd != 0)
 	{
-		if (csr_read_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr,
-						 &csr_val))
-		{
-			prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
+		if (csr_read_reg(hart, hart->curr_priv_mode, csr_addr, &csr_val))
 			return;
-		}
 	}
 
 	not_allowed_bits = csr_val & ~csr_mask;
 	new_csr_val = not_allowed_bits | (new_val & csr_mask);
 
-	if (csr_write_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr, new_csr_val))
-	{
-		prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
+	if (csr_write_reg(hart, hart->curr_priv_mode, csr_addr, new_csr_val))
 		return;
-	}
 
 	hart->x[hart->rd] = csr_val & csr_mask;
 }
@@ -450,20 +443,13 @@ void CSRRSx(struct hart *hart, uxlen new_val)
 	uxlen csr_val = 0;
 	u16 csr_addr = (u16)(hart->imm & 0xfff);
 
-	if (csr_read_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr, &csr_val))
-	{
-		prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
+	if (csr_read_reg(hart, hart->curr_priv_mode, csr_addr, &csr_val))
 		return;
-	}
 
 	if (hart->rs1 != 0)
 	{
-		if (csr_write_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr,
-						  csr_val | new_val))
-		{
-			prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
+		if (csr_write_reg(hart, hart->curr_priv_mode, csr_addr, csr_val | new_val))
 			return;
-		}
 	}
 
 	hart->x[hart->rd] = csr_val;
@@ -474,20 +460,14 @@ void CSRRCx(struct hart *hart, uxlen new_val)
 	uxlen csr_val = 0;
 	u16 csr_addr = (u16)(hart->imm & 0xfff);
 
-	if (csr_read_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr, &csr_val))
-	{
-		prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
+	if (csr_read_reg(hart, hart->curr_priv_mode, csr_addr, &csr_val))
 		return;
-	}
 
 	if (hart->rs1 != 0)
 	{
-		if (csr_write_reg(hart->csr_regs, hart->curr_priv_mode, csr_addr,
+		if (csr_write_reg(hart, hart->curr_priv_mode, csr_addr,
 						  csr_val & ~new_val))
-		{
-			prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
 			return;
-		}
 	}
 	hart->x[hart->rd] = csr_val;
 }
@@ -1448,6 +1428,7 @@ int hart_decode(struct hart *hart)
 
 	default:
 	illegal_inst:
+		debug("illegal instruction used %#x", hart->opcode);
 		prepare_sync_trap(hart, trap_cause_illegal_instr, 0);
 		return -1;
 	}
