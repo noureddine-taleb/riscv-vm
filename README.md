@@ -1,1 +1,3 @@
-## to run the project checkout <a href="https://noureddine.xyz/blog/linux/riscv-vm/" target="_blank" rel="external">this link.</a>
+## to run the project checkout 
+
+[![asciicast](https://asciinema.org/a/14.png)](/assets/riscv-demo.cast)
